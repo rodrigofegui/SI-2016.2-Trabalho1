@@ -1,0 +1,7 @@
+Codigo	Descrição	Unidades Existentes
+1		Pudim		100
+2		Maça		120
+5		Escova		10
+4		Agua		100
+3		Pasta		8
+
