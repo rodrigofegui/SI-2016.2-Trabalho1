@@ -39,7 +39,8 @@ public class Item {
 	private int leadTime;
 	private int periodo;
 	
-	
+	private boolean habilitadoEstoqueMin;
+	private boolean habilitadoEstoqueMax;
 	
 	/**
 	 * Construção de um Item por maneira default
@@ -57,9 +58,7 @@ public class Item {
 		this.estoqueMin = 0;
 		this.estoqueMax = 0;
 		
-		this.setFatorSeguranca (95f);
-		this.setLeadTime (2);
-		this.setPeriodo (1);
+		restaurar();
 	}
 	
 	/**
@@ -73,6 +72,19 @@ public class Item {
 		
 		setCodigo(codigo);
 		setDescricao(descricao);
+	}
+	
+	/**
+	 * Construção de um Item conhecendo seu código,
+	 * sua descrição e sua quantidade atual
+	 * @param codigo Identificação única
+	 * @param descricao Identificação inteligível
+	 * @param qntAtual Quantidade atual em estoque
+	 */
+	public Item (int codigo, String descricao, int qntAtual){
+		this(codigo, descricao);
+		
+		addQntAtual(qntAtual);
 	}
 	
 	
@@ -130,6 +142,15 @@ public class Item {
 	}
 	
 	/**
+	 * Valor atribuído à quantidade existente atualmente
+	 * no estoque
+	 * @return Quantidade existente em estoque
+	 */
+	public int getQntExistente (){
+		return historico.getFirst();
+	}
+	
+	/**
 	 * Valores registrados no histórico do Item
 	 * @return Histórico do Item
 	 */
@@ -172,7 +193,7 @@ public class Item {
 	 * @return Nível de estoque mínimo
 	 */
 	public int getEstoqueMin (){
-		if (demandaNova)
+		if (demandaNova || habilitadoEstoqueMin)
 			estoqueMin = calculaEstoqueMin ();
 		
 		return estoqueMin;
@@ -183,13 +204,13 @@ public class Item {
 	 * @return Nível de estoque máximo
 	 */
 	public int getEstoqueMax (){
-		if (demandaNova)
+		if (demandaNova || habilitadoEstoqueMax)
 			estoqueMax = calculaEstoqueMax ();
 		
 		return estoqueMax;
 	}
 	
-/**
+	/**
 	 * Valor atribuído ao fator de segurança para o Item
 	 * @return Fator de segurança
 	 */
@@ -271,13 +292,52 @@ public class Item {
 	 * @param periodo Período de uso do estoque a ser
 	 * atribuído
 	 */
-
 	public void setPeriodo(int periodo) {
 		this.periodo = periodo;
 	}
 	
+	/**
+	 * Verificação se o item está habilitado para o
+	 * cálculo do estoque mínimo
+	 * @return True se estiver habilitado ou false,
+	 * caso contrário
+	 */
+
+	public boolean isHabilitadoEstoqueMin() {
+		return habilitadoEstoqueMin;
+	}
 	
+	/**
+	 * Configuração da habilitação ou não para o cálculo do Estoque
+	 * mínimo
+	 * @param habilitadoEstoqueMin Ativação ou não do cálculo
+	 */
+
+	public void setHabilitadoEstoqueMin(boolean habilitadoEstoqueMin) {
+		this.habilitadoEstoqueMin = habilitadoEstoqueMin;
+	}
 	
+	/**
+	 * Verificação se o item está habilitado para o
+	 * cálculo do estoque máximo
+	 * @return True se estiver habilitado ou false,
+	 * caso contrário
+	 */
+	public boolean isHabilitadoEstoqueMax() {
+		return habilitadoEstoqueMax;
+	}
+	
+	/**
+	 * Configuração da habilitação ou não para o cálculo do Estoque
+	 * máximo
+	 * @param habilitadoEstoqueMin Ativação ou não do cálculo
+	 */
+	public void setHabilitadoEstoqueMax (boolean habilitadoEstoqueMax) {
+		this.habilitadoEstoqueMax = habilitadoEstoqueMax;
+	}
+
+
+
 
 	/**
 	 * Cálculo da médida da demanda para o histórico do Item
@@ -341,6 +401,18 @@ public class Item {
 	}
 	
 	
+	
+	/**
+	 * Configurando as configurações de controle para o default
+	 */
+	public void restaurar (){
+		this.setFatorSeguranca (95f);
+		this.setLeadTime (2);
+		this.setPeriodo (1);
+		
+		this.setHabilitadoEstoqueMin (true);
+		this.setHabilitadoEstoqueMax (true);
+	}
 	
 	/**
 	 * Interpretação inteligível do Item

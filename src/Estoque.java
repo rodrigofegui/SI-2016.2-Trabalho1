@@ -3,10 +3,15 @@
  */
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.LinkedList;
 
 /**
@@ -21,21 +26,15 @@ public class Estoque {
 	 * Itens que deverão ter o estoque mínimo calculado
 	 * Itens que deverão ter o estoque máximo calculado
 	 */
-	private LinkedList<Item> itens;
-	private LinkedList<Boolean> itensCalcEstoqueMin;
-	private LinkedList<Boolean> itensCalcEstoqueMax;
+	private LinkedList<Item> itens;	
+	
+	
 	
 	/**
 	 * Construção de um Estoque por maneira default
 	 */
 	public Estoque(){
 		this.itens = new LinkedList<Item>();
-		this.itensCalcEstoqueMin = new LinkedList<Boolean>();
-		this.itensCalcEstoqueMax = new LinkedList<Boolean>();
-		
-		System.out.println("Antes");
-		System.out.println (toString());
-		System.out.println("\n");
 	}
 	
 	/**
@@ -61,9 +60,14 @@ public class Estoque {
 		this(nomeArqCat);
 		
 		constroiHistorico (nomeArqHist);
-		System.out.println (toString());
 	}
 
+	
+	
+	public LinkedList<Item> getItens (){
+		return this.itens;
+	}
+	
 	
 	
 	/**
@@ -80,23 +84,11 @@ public class Estoque {
 				String[] partes = linha.split("\\s+");
 				
 				if (partes.length > 1){
-					Item item = new Item();
-					
 					int codigo = Integer.parseInt(partes[0]);
 					String descricao = partes[1];
-					int uni = Integer.parseInt(partes[2]);
+					int unidade = Integer.parseInt(partes[2]);
 					 
-					item.setCodigo(codigo);
-					item.setDescricao(descricao);
-					item.addQntAtual(uni);
-					   
-					if ((codigo - 1) < itens.size())
-						itens.add(item.getCodigo() - 1, item);
-					else
-						itens.add(item);
-					
-					itensCalcEstoqueMin.add(false);
-					itensCalcEstoqueMax.add(false);
+					addItem(codigo, descricao, unidade);
 				}
 			}
 		     
@@ -184,7 +176,118 @@ public class Estoque {
 	    }
 	}
 
+	/**
+	 * Marcar todos os itens em estoque como hábeis para o cálculo
+	 * do estoque mínimo
+	 */
+	public void marcarTodosEstoqueMin (){
+		for (int ind = 0; ind < itens.size(); ind++){
+			Item itemAvulso = itens.get(ind);
+			
+			itemAvulso.setHabilitadoEstoqueMin(true);
+		}			
+	}
 	
+	/**
+	 * Marcar todos os itens em estoque como hábeis para o cálculo
+	 * do estoque máximo
+	 */
+	public void marcarTodosEstoqueMax (){
+		for (int ind = 0; ind < itens.size(); ind++){
+			Item itemAvulso = itens.get(ind);
+			
+			itemAvulso.setHabilitadoEstoqueMax(true);
+		}			
+	}
+	
+	/**
+	 * Desmarcar todos os itens em estoque como hábeis para o cálculo
+	 * do estoque mínimo
+	 */
+	public void desmarcarTodosEstoqueMin (){
+		for (int ind = 0; ind < itens.size(); ind++){
+			Item itemAvulso = itens.get(ind);
+			
+			itemAvulso.setHabilitadoEstoqueMin(false);
+		}			
+	}
+	
+	/**
+	 * Desmarcar todos os itens em estoque como hábeis para o cálculo
+	 * do estoque máximo
+	 */
+	public void desmarcarTodosEstoqueMax (){
+		for (int ind = 0; ind < itens.size(); ind++){
+			Item itemAvulso = itens.get(ind);
+			
+			itemAvulso.setHabilitadoEstoqueMax(false);
+		}			
+	}
+	
+	/**
+	 * Atribuição a todos os itens do estoque o mesmo período
+	 * para o reabastecimento
+	 * @param leadTime Tempo de reabastecimento a ser aplicado
+	 */
+	public void aplicarTodosLeadTime (int leadTime){
+		for (int ind = 0; ind < itens.size(); ind++){
+			Item itemAvulso = itens.get(ind);
+			
+			itemAvulso.setLeadTime(leadTime);
+		}
+	}
+	
+	/**
+	 * Atribuição a todos os itens do estoque o mesmo período
+	 * de consideração para o estoque
+	 * @param periodo Tempo para consideração0 a ser aplicado
+	 */
+	public void aplicarTodosPeriodo (int periodo){
+		for (int ind = 0; ind < itens.size(); ind++){
+			Item itemAvulso = itens.get(ind);
+			
+			itemAvulso.setPeriodo(periodo);
+		}
+	}
+	
+	/**
+	 * Atribuição a todos os itens do estoque o mesmo fator de
+	 * segurança do estoque
+	 * @param nivelSeguranca Nível de segurança a ser aplicado
+	 */
+	public void aplicarTodosFatorSeguranca (float nivelSeguranca){
+		for (int ind = 0; ind < itens.size(); ind++){
+			Item itemAvulso = itens.get(ind);
+			
+			itemAvulso.setFatorSeguranca(nivelSeguranca);
+		}
+	}
+	
+	/**
+	 * Restauração dos itens do Estoque às configurações iniciais
+	 */
+	public void restaurarTodos (){
+		for (int ind = 0; ind < itens.size(); ind++){
+			Item itemAvulso = itens.get(ind);
+			
+			itemAvulso.restaurar();
+		}
+	}
+	
+	/**
+	 * Inserção de um novo elemento no Estoque
+	 * @param codigo Código do Item
+	 * @param descricao Descrição do Item
+	 * @param unidade Quantidade atual do Item
+	 */
+	public void addItem (int codigo, String descricao, int unidade){
+		Item item = new Item(codigo, descricao, unidade);
+		   
+		if ((codigo - 1) < itens.size())
+			itens.add(item.getCodigo() - 1, item);
+		else
+			itens.add(item);
+	}
 	
 	/**
 	 * Ordenação do Estoque
@@ -199,6 +302,59 @@ public class Estoque {
 		});
 	}
 	
+	/**
+	 * Construção do relatório do constrole,
+	 * disponibilizando para exibição da maneira escolhida
+	 * @return Relatório atualizado
+	 */
+	public String gerarRelatorio (String data){
+		String relatorio = "";
+		
+		relatorio += "Relatório de situação do estoque\n\n";
+		relatorio += "Data de expedição: " + data + "\n\n";
+		relatorio += "--------------------------------------------------------------------\n";
+		relatorio += "Código\tDescrição\tQnt Existente\tEstoque Min\t\tEstoque Max\n";
+		relatorio += "--------------------------------------------------------------------\n";
+		
+		for (int ind = 0; ind < itens.size(); ind++){
+			Item item = itens.get(ind);
+			relatorio +=   item.getCodigo() + "\t\t"
+						 + item.getDescricao() + "\t\t"
+						 + item.getQntExistente() + "\t\t\t\t"
+						 + item.getEstoqueMin() + "\t\t\t\t"
+						 + item.getEstoqueMax() + "\n";
+		}
+		
+		relatorio += "--------------------------------------------------------------------\n";
+		
+		return relatorio;
+	}
+	
+	public void escreverRelatorio (){
+		try{			
+			DateFormat dateFormat = new SimpleDateFormat ("yyyy-MM-dd_HH:mm:ss");
+			Date date = new Date();
+			String data = dateFormat.format(date);
+			
+			String relatorio = gerarRelatorio (data);
+			String caminho = "Relatórios/" + data + ".txt";
+
+			BufferedWriter gravarArq = new BufferedWriter(new FileWriter (caminho));
+			
+			gravarArq.append(relatorio + "\n");
+			
+			gravarArq.close();
+			
+		}catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	/**
+	 * Descritivo do estoque, com enfoque nos itens registrados
+	 */
 	public String toString (){
 		String retorno = "";
 		
