@@ -18,15 +18,24 @@ import java.util.LinkedList;
 public class Estoque {
 	/**
 	 * Itens registrados
+	 * Itens que deverão ter o estoque mínimo calculado
+	 * Itens que deverão ter o estoque máximo calculado
 	 */
 	private LinkedList<Item> itens;
-	//private LinkedList<Integer> min_estoque;
+	private LinkedList<Boolean> itensCalcEstoqueMin;
+	private LinkedList<Boolean> itensCalcEstoqueMax;
 	
 	/**
 	 * Construção de um Estoque por maneira default
 	 */
 	public Estoque(){
 		this.itens = new LinkedList<Item>();
+		this.itensCalcEstoqueMin = new LinkedList<Boolean>();
+		this.itensCalcEstoqueMax = new LinkedList<Boolean>();
+		
+		System.out.println("Antes");
+		System.out.println (toString());
+		System.out.println("\n");
 	}
 	
 	/**
@@ -52,10 +61,11 @@ public class Estoque {
 		this(nomeArqCat);
 		
 		constroiHistorico (nomeArqHist);
-		System.out.println ("");
-		System.out.println (this.itens.toString());
+		System.out.println (toString());
 	}
 
+	
+	
 	/**
 	 * Catalogação dos itens que constam no estoque
 	 * @param nomeArq Nome do arquivo que armazena os dados
@@ -84,6 +94,9 @@ public class Estoque {
 						itens.add(item.getCodigo() - 1, item);
 					else
 						itens.add(item);
+					
+					itensCalcEstoqueMin.add(false);
+					itensCalcEstoqueMax.add(false);
 				}
 			}
 		     
@@ -171,6 +184,8 @@ public class Estoque {
 	    }
 	}
 
+	
+	
 	/**
 	 * Ordenação do Estoque
 	 */
@@ -182,5 +197,24 @@ public class Estoque {
 		        return objetoUm.compareTo(objetoDois);
 		    }
 		});
+	}
+	
+	public String toString (){
+		String retorno = "";
+		
+		if (itens.isEmpty())
+			retorno += "Não há itens registrados!\n";
+		else{
+			if (itens.size() == 1)
+				retorno += "Temos o seguinte item:\n";
+			else
+				retorno += "Temos os seguintes itens:\n";
+			
+			retorno += itens.toString();
+		}
+		
+		
+		
+		return retorno;
 	}
 }

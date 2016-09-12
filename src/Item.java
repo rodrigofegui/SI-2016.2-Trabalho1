@@ -15,10 +15,31 @@ public class Item {
 	 * Código único de identificacao
 	 * Identificador inteligível
 	 * Historico das quantidade em estoque, incluindo a atual
+	 * Controle da inserção de novas demandas ao histórico
+	 * Média da demanda
+	 * Desvio padrão da demanda
+	 * Estoque mínimo
+	 * Estoque máximo
+	 * Fator de segurança para o controle de estoque
+	 * Tempo de reabastecimento
+	 * Período de uso do estoque
 	 */
 	private int codigo;
 	private String descricao;
 	private LinkedList<Integer> historico;
+	
+	private boolean demandaNova;
+	private int demandaMedia;
+	private int demandaDesvPad;
+	
+	private int estoqueMin;
+	private int estoqueMax;
+	
+	private float fatorSeguranca;
+	private int leadTime;
+	private int periodo;
+	
+	
 	
 	/**
 	 * Construção de um Item por maneira default
@@ -26,7 +47,19 @@ public class Item {
 	public Item (){
 		this.codigo = -1;
 		this.descricao = "";
+		
 		this.historico = new LinkedList<Integer>();
+		
+		this.demandaNova = true;
+		this.demandaMedia = 0;
+		this.demandaDesvPad = 0;
+		
+		this.estoqueMin = 0;
+		this.estoqueMax = 0;
+		
+		this.setFatorSeguranca (95f);
+		this.setLeadTime (2);
+		this.setPeriodo (1);
 	}
 	
 	/**
@@ -43,12 +76,14 @@ public class Item {
 	}
 	
 	
+	
 	/**
 	 * Incremento de um valor ao histórico
 	 * @param demanda Quantidade a ser adicionada ao histórico
 	 */
 	public void addHistorico (Integer demanda){
 		this.historico.add(demanda);
+		this.demandaNova = true;
 	}
 	
 	/**
@@ -57,7 +92,9 @@ public class Item {
 	 */
 	public void addQntAtual (Integer atual){
 		this.historico.addFirst(atual);
+		this.demandaNova = true;
 	}
+	
 	
 	
 	/**
@@ -109,11 +146,210 @@ public class Item {
 	}
 
 	/**
+	 * Valor atribuído à média da demanda
+	 * @return Média da Demanda
+	 */
+	public int getDemandaMedia() {
+		if (demandaNova)
+			demandaMedia = calculaDemandaMedia();
+		
+		return demandaMedia;
+	}
+
+	/**
+	 * Valor atribuído ao desvio padrão da demanda
+	 * @return Desvio padrão da demanda
+	 */
+	public int getDemandaDesvPad() {
+		if (demandaNova)
+			demandaDesvPad = calculaDemandaDesvPad();
+		
+		return demandaDesvPad;
+	}
+	
+	/**
+	 * Valor atribuído ao nível de estoque mínimo
+	 * @return Nível de estoque mínimo
+	 */
+	public int getEstoqueMin (){
+		if (demandaNova)
+			estoqueMin = calculaEstoqueMin ();
+		
+		return estoqueMin;
+	}
+
+	/**
+	 * Valor atribuído ao nível de estoque máximo
+	 * @return Nível de estoque máximo
+	 */
+	public int getEstoqueMax (){
+		if (demandaNova)
+			estoqueMax = calculaEstoqueMax ();
+		
+		return estoqueMax;
+	}
+	
+/**
+	 * Valor atribuído ao fator de segurança para o Item
+	 * @return Fator de segurança
+	 */
+	public float getFatorSeguranca() {
+		return fatorSeguranca;
+	}
+
+	/**
+	 * Atribui valor ao fator de segurança para o Item,
+	 * conforme a porcentagem
+	 * @param nivelSeguranca Porcentagem de seguranca,
+	 * entre 0 e 99.99%, a ser atribuida
+	 */
+	public void setFatorSeguranca (float nivelSeguranca) {
+		if (nivelSeguranca <= 60f)
+			this.fatorSeguranca = 0.2540f;
+		
+		else if (nivelSeguranca <= 70f)
+			this.fatorSeguranca = 0.5250f;
+		
+		else if (nivelSeguranca <= 80f)
+			this.fatorSeguranca = 0.8420f;
+		
+		else if (nivelSeguranca <= 85f)
+			this.fatorSeguranca = 1.0370f;
+		
+		else if (nivelSeguranca <= 90f)
+			this.fatorSeguranca = 1.2820f;
+		
+		else if (nivelSeguranca <= 95f)
+			this.fatorSeguranca = 1.6450f;
+		
+		else if (nivelSeguranca <= 96f)
+			this.fatorSeguranca = 1.7510f;
+		
+		else if (nivelSeguranca <= 97f)
+			this.fatorSeguranca = 1.8800f;
+		
+		else if (nivelSeguranca <= 98f)
+			this.fatorSeguranca = 2.0550f;
+		
+		else if (nivelSeguranca <= 99f)
+			this.fatorSeguranca = 2.3250f;
+		
+		else if (nivelSeguranca <= 99.90f)
+			this.fatorSeguranca = 3.1000f;
+		
+		else if (nivelSeguranca <= 99.99f)
+			this.fatorSeguranca = 3.6200f;
+	}
+
+	/**
+	 * Valor atribuído ao tempo de reabastecimento do Item
+	 * @return Tempo de Reabastecimento
+	 */
+	public int getLeadTime() {
+		return leadTime;
+	}
+
+	/**
+	 * Atribui valor ao tempo de reabastecimento do Item
+	 * @param leadTime Tempo de reabastecimento a ser
+	 * atribuído
+	 */
+	public void setLeadTime(int leadTime) {
+		this.leadTime = leadTime;
+	}
+
+	/**
+	 * Valor atribuído ao período que utiliza o estoque
+	 * @return Período de uso do estoque
+	 */
+	public int getPeriodo() {
+		return periodo;
+	}
+	
+	/**
+	 * Atribui valor ao período que utiliza o estoque
+	 * @param periodo Período de uso do estoque a ser
+	 * atribuído
+	 */
+
+	public void setPeriodo(int periodo) {
+		this.periodo = periodo;
+	}
+	
+	
+	
+
+	/**
+	 * Cálculo da médida da demanda para o histórico do Item
+	 * @return Demanda média recém calculada
+	 */
+	private int calculaDemandaMedia (){
+		if (!historico.isEmpty()){
+			float soma = 0.0f;
+				
+			for (int ind = 0; ind < historico.size(); ind++)
+				soma += (float) historico.get(ind);
+				
+			//demandaNova = false;
+			
+			return Math.round(soma / historico.size());
+		}
+		
+		return 0;
+	}
+	
+	/**
+	 * Cálculo do desvio padrão para o histórico do Item
+	 * @return Valor do desvio padrão
+	 */
+	private int calculaDemandaDesvPad (){
+		if (!historico.isEmpty()){
+			float desvPad = 0.0f;
+			float media = getDemandaMedia();
+			
+			for (int ind = 0; ind < historico.size(); ind++)
+				desvPad += Math.pow(historico.get(ind) - media, 2);
+			
+			desvPad = (float) Math.sqrt(desvPad / (historico.size() - 1));
+			
+			//demandaNova = false;
+			
+			return Math.round(desvPad);
+		}
+		return 0;
+	}
+	
+	/**
+	 * Cálculo do nível mínimo de estoque
+	 * @return Nível mínimo calculado
+	 */
+	private int calculaEstoqueMin() {
+		float termo1 = getFatorSeguranca() * getDemandaDesvPad();
+		double termo2 = Math.sqrt(getLeadTime() / getPeriodo());
+		
+		demandaNova = false;
+		
+		return Math.round(termo1 * (float) termo2);
+	}
+	
+	/**
+	 * Cálculo do nível máximo de estoque
+	 * @return Nível mínimo calculado
+	 */
+	private int calculaEstoqueMax() {
+		return ((getEstoqueMin() + getDemandaMedia()) * getLeadTime());
+	}
+	
+	
+	
+	/**
 	 * Interpretação inteligível do Item
 	 * @return Interpretação
 	 */
 	public String toString (){
-		return "O código '" + getCodigo() + "' está atribuído ao produto: " + getDescricao() + "; tendo como histórico: " + getHistorico().toString() + "\n";
+		return "O código '" + getCodigo() +
+				"' está atribuído ao produto: " + getDescricao() + ";"
+				+ " tendo como histórico: \n" + getHistorico().toString() + "\n";
 	}
 	
 	/**
@@ -121,7 +357,6 @@ public class Item {
 	 * @param objetoDois Item a ser comparado
 	 * @return Valor da comparação. 0 se forem iguais, senão retorna a subtração dos códigos.
 	 */
-
 	public int compareTo (Item objetoDois){
 		if (this.equals(objetoDois))
 			return 0;
