@@ -8,9 +8,9 @@ import gui.InterfaceGrafica;
  */
 public class ControladorEstoque {
 	public static void main(String[] args) {
-		Estoque estoque = new Estoque("Referências/ListaItensBase.txt", "Referências/HistóricoBase.txt");
+		//Estoque estoque = new Estoque("Referências/ListaItensBase.txt", "Referências/HistóricoBase.txt");
 		
-		estoque.escreverRelatorio();
-		//InterfaceGrafica gui = new InterfaceGrafica ();
+		//estoque.escreverRelatorio();
+		new InterfaceGrafica ();
 	}
 }

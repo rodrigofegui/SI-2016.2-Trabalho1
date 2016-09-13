@@ -305,6 +305,7 @@ public class Estoque {
 	/**
 	 * Construção do relatório do constrole,
 	 * disponibilizando para exibição da maneira escolhida
+	 * @param data Data a ser incorporada ao relatório
 	 * @return Relatório atualizado
 	 */
 	public String gerarRelatorio (String data){
@@ -330,6 +331,9 @@ public class Estoque {
 		return relatorio;
 	}
 	
+	/**
+	 * Escrita do relatório num arquivo .txt
+	 */
 	public void escreverRelatorio (){
 		try{			
 			DateFormat dateFormat = new SimpleDateFormat ("yyyy-MM-dd_HH:mm:ss");
@@ -354,6 +358,7 @@ public class Estoque {
 	
 	/**
 	 * Descritivo do estoque, com enfoque nos itens registrados
+	 * @return Estoque convertido em string
 	 */
 	public String toString (){
 		String retorno = "";
