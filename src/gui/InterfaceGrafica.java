@@ -2,6 +2,7 @@ package gui;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -10,6 +11,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -18,10 +21,13 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
 
 
 /**
@@ -30,15 +36,16 @@ import javax.swing.event.DocumentListener;
  * @version	1.0
  * @since	11/09/2016
  */
-public class InterfaceGrafica implements DocumentListener, MouseListener, ActionListener, ItemListener {
+public class InterfaceGrafica implements DocumentListener, MouseListener,
+										ActionListener, ItemListener, PropertyChangeListener {
 	static JFrame janelaPrincipal = null;
-	static final int	comprimentoMaximo	= 611;
-	static final int	alturaMaxima		= 341;
+	static final int	comprimentoMaximo	= 760 + 250;
+	static final int	alturaMaxima		= 493;
 	
 	private  JPanel painelPrincipal = null;
 		private  JPanel painelEsquerda = null;
 			private JPanel painelAbrir = null;
-				private JTextField nomeArqListagem = null;
+				public static JTextField nomeArqListagem = null;
 				private JButton botaoAbrirListagem = null;
 				private JTextField nomeArqHistorico = null;
 				private JButton botaoAbrirHistorico = null;
@@ -51,6 +58,19 @@ public class InterfaceGrafica implements DocumentListener, MouseListener, Action
 				private JCheckBox marcarTodosFS = null;
 				private JButton restaurarTodos = null;
 		private  JPanel painelDireita = null;
+			private JPanel painelItensEstoque = null;
+				private DefaultTableModel modeloTabelaDados = null;	
+					private JTable tabelaDados = null;
+			private JPanel painelManipulacao = null;
+				private JButton salvarListagem = null;
+				private JButton exibirHistorico = null;
+				private JButton gerarRelatorio = null;
+				private JButton markTodosMin = null;
+				private JButton desmarkTodosMin = null;
+				private JButton calcMin = null;
+				private JButton markTodosMax = null;
+				private JButton desmarkTodosMax = null;
+				private JButton calcMax = null;
 	/**
 	 * Itens descartáveis, mas utilizados por muitos
 	 */
@@ -72,6 +92,8 @@ public class InterfaceGrafica implements DocumentListener, MouseListener, Action
 		
 		janelaPrincipal.setSize (new Dimension (comprimentoMaximo, alturaMaxima));
 		
+		janelaPrincipal.setMinimumSize (new Dimension (comprimentoMaximo, alturaMaxima));
+		
 		janelaPrincipal.setResizable (false);
 		
 		janelaPrincipal.setVisible (true);
@@ -90,11 +112,12 @@ public class InterfaceGrafica implements DocumentListener, MouseListener, Action
 	 * @return Painel construído
 	 */
 	private JPanel getPainelPrincipal(){
-		configurarPainelPrincipal();
+		painelPrincipal = criarPainel(1, 10, comprimentoMaximo, alturaMaxima);
 		
 		painelPrincipal.add(getPainelEsquerda());
 		
 		painelPrincipal.add(getPainelDireita());
+		
 		return painelPrincipal;
 	}
 	
@@ -103,11 +126,12 @@ public class InterfaceGrafica implements DocumentListener, MouseListener, Action
 	 * @return Painel construído
 	 */
 	private JPanel getPainelEsquerda (){
-		configurarPainelEsquerdo ();
+		painelEsquerda = criarPainel(2, 0, 250, alturaMaxima);
 		
 		painelEsquerda.add(getPainelAbrir());
 		
-		painelEsquerda.add(getPainelConfiguracoes());
+		painelEsquerda.add(getPainelConfiguracoesGerais());
+		
 		return painelEsquerda;
 	}
 	
@@ -116,7 +140,8 @@ public class InterfaceGrafica implements DocumentListener, MouseListener, Action
 	 * @return Painel construído
 	 */
 	private JPanel getPainelAbrir (){
-		configurarPainelAbrir();
+		painelAbrir = criarPainel(2, 1, 1, 2, 250, 120,
+									" Abrir Arquivos: ", "Arquivos necessários para a construção do estoque");
 		
 		construirPainelAbrir();
 		
@@ -127,152 +152,243 @@ public class InterfaceGrafica implements DocumentListener, MouseListener, Action
 	 * Estrutura construída no painel configurações da aplicação
 	 * @return Painel construído
 	 */
-	private JPanel getPainelConfiguracoes (){
-		configurarPainelConfiguracoes();
+	private JPanel getPainelConfiguracoesGerais (){
+		painelConfiguracoes = criarPainel(4, 1, 1, 2, 250, 180,
+											" Configurações Globais: ", "Configurações habilitadas a atingir todos os itens em estoque");
 		
 		construirPainelConfiguracoes();
 		
 		return painelConfiguracoes;
 	}
 	
+	/**
+	 * Estrutura construída no painel diretira da aplicação
+	 * @return Painel construído
+	 */
 	private JPanel getPainelDireita (){
-		configurarPainelDireita();
+		painelDireita = criarPainel (1, 740, alturaMaxima, " Estoque: ",
+									"Informações e configurações que afetam o estoque");
+		
+		painelDireita.add(getPainelItensEstoque());
+				
+		painelDireita.add(getPainelManipulacao());
 		
 		return painelDireita;
 	}
 	
-	
-	
 	/**
-	 * Configuração inicial do painel para receber os recursos
+	 * Estrutura construída no painel itens no estoque da aplicação
+	 * @return Painel construído
 	 */
-	private void configurarPainelPrincipal (){
-		painelPrincipal = new JPanel ();
+	private JPanel getPainelItensEstoque (){
+		painelItensEstoque = criarPainel (1, 1, 480, alturaMaxima, " Itens em estoque: ", "Descritivo básico dos itens em estoque");
+				
+		construirTabelaItens();
 		
-		dimensaoAvulsa = new Dimension(comprimentoMaximo, alturaMaxima);
-		
-		//painelPrincipal.setLayout (new GridLayout(1, 2));
-		//painelPrincipal.setLayout (new BoxLayout(painelPrincipal, BoxLayout.Y_AXIS));
-		painelPrincipal.setLayout (new BoxLayout(painelPrincipal, BoxLayout.X_AXIS));
-		
-		painelPrincipal.setMaximumSize(dimensaoAvulsa);
-		painelPrincipal.setMinimumSize(dimensaoAvulsa);
-		painelPrincipal.setPreferredSize(dimensaoAvulsa);
-		
-		painelPrincipal.setOpaque (true);
-        
-        Border caixaPrincipal = BorderFactory.createEmptyBorder (10, 10, 10, 10);
-        painelPrincipal.setBorder (caixaPrincipal);
+		return painelItensEstoque;
 	}
 	
 	/**
-	 * Configuração inicial do painel para receber os recursos
+	 * Estrutura construída no painel manipulação da aplicação
+	 * @return Painel construído
 	 */
-	private void configurarPainelEsquerdo (){
-		painelEsquerda = new JPanel ();
+	private JPanel getPainelManipulacao (){
+		painelManipulacao = criarPainel (2, 250, alturaMaxima, " Configurações: ", "Configurações pertinentes ao estoque");
 		
-		dimensaoAvulsa = new Dimension(270, alturaMaxima);
+		construirPainelManipulacao ();
 		
-		painelEsquerda.setLayout (new GridLayout(2, 1));
-		//painelEsquerda.setLayout (new BoxLayout(painelPrincipal, BoxLayout.Y_AXIS));
-		//painelEsquerda.setLayout (new BoxLayout(painelEsquerda, BoxLayout.X_AXIS));
+		return painelManipulacao;
+	}
+	
+	
+	
+	
+	/**
+	 * Criação de painel para conexão de componentes
+	 * @param layout Escolha do layout aplicado ao painel, onde:
+	 * 0 equivale a {@link FlowLayout}
+	 * 1 equivale a {@link BoxLayout} em X
+	 * 2 equivale a {@link BoxLayout} em Y
+	 * @param borda Definição da dimensão da borda, considerando uma
+	 * borda homogênea numa caixa vazia
+	 * @param larg Largura do painel
+	 * @param alt Altura do painel
+	 * @return Painel criado
+	 */
+	private JPanel criarPainel (int layout, int borda, int larg, int alt){
+		painelAvulso = new JPanel ();
 		
-		painelEsquerda.setMaximumSize(dimensaoAvulsa);
-		painelEsquerda.setMinimumSize(dimensaoAvulsa);
-		painelEsquerda.setPreferredSize(dimensaoAvulsa);
+		dimensaoAvulsa = new Dimension(larg, alt);
 		
-		painelEsquerda.setOpaque (true);
+		switch (layout){
+			case 0:
+				painelAvulso.setLayout (new FlowLayout());
+				break;
+			case 1:
+				painelAvulso.setLayout (new BoxLayout(painelAvulso, BoxLayout.X_AXIS));
+				break;
+			case 2:
+				painelAvulso.setLayout (new BoxLayout(painelAvulso, BoxLayout.Y_AXIS));
+		}
+		
+		painelAvulso.setMaximumSize(dimensaoAvulsa);
+		painelAvulso.setMinimumSize(dimensaoAvulsa);
+		painelAvulso.setPreferredSize(dimensaoAvulsa);
+		
+		painelAvulso.setOpaque (true);
         
-        Border caixaPrincipal = BorderFactory.createEmptyBorder (10, 10, 10, 10);
-        painelEsquerda.setBorder (caixaPrincipal);
+        Border caixaPrincipal = BorderFactory.createEmptyBorder (borda, borda, borda, borda);
+        painelAvulso.setBorder (caixaPrincipal);
+        
+        return painelAvulso;
 	}
 	
 	/**
-	 * Configuração inicial do painel Abrir, como:
-	 * dimensão, layout e borda
+	 * Criação de painel para conexão de componentes
+	 * @param layout Escolha do layout aplicado ao painel, onde:
+	 * 0 equivale a {@link FlowLayout}
+	 * 1 equivale a {@link BoxLayout} em X
+	 * 2 equivale a {@link BoxLayout} em Y
+	 * @param larg Largura do painel
+	 * @param alt Altura do painel
+	 * @param titulo Título a ser posto na borda
+	 * @param mensagem Mensagem com indicações das tarefas da região
+	 * @return Painel criado
 	 */
-	private void configurarPainelAbrir (){
-		painelAbrir = new JPanel();
-		dimensaoAvulsa = new Dimension(250, 115);
+	private JPanel criarPainel (int layout, int larg, int alt, String titulo, String mensagem){
+		painelAvulso = new JPanel ();
 		
-		//painelItens.setLayout(new FlowLayout());
-		painelAbrir.setLayout(new GridLayout(2, 1, 1, 2));
-		//painelItens.setLayout (new BoxLayout(painelPrincipal, BoxLayout.Y_AXIS));
+		dimensaoAvulsa = new Dimension(larg, alt);
 		
-		painelAbrir.setMaximumSize(dimensaoAvulsa);
-		painelAbrir.setMinimumSize(dimensaoAvulsa);
-		painelAbrir.setPreferredSize(dimensaoAvulsa);
+		switch (layout){
+			case 0:
+				painelAvulso.setLayout (new FlowLayout());
+				break;
+			case 1:
+				painelAvulso.setLayout (new BoxLayout(painelAvulso, BoxLayout.X_AXIS));
+				break;
+			case 2:
+				painelAvulso.setLayout (new BoxLayout(painelAvulso, BoxLayout.Y_AXIS));
+		}
 		
-		painelAbrir.setOpaque (true);
+		painelAvulso.setMaximumSize(dimensaoAvulsa);
+		painelAvulso.setMinimumSize(dimensaoAvulsa);
+		painelAvulso.setPreferredSize(dimensaoAvulsa);
+		
+		painelAvulso.setOpaque (true);
         
-        //Border caixaPrincipal = BorderFactory.createEmptyBorder (5, 5, 5, 5);
-        //painelItens.setBorder (caixaPrincipal);
-		painelAbrir.setBorder (BorderFactory.createTitledBorder(" Abrir Arquivos: "));
-		painelAbrir.setToolTipText("Arquivos necessários para a construção do estoque");
+		painelAvulso.setBorder (BorderFactory.createTitledBorder(titulo));
+        painelAvulso.setToolTipText(mensagem);
+        
+        return painelAvulso;
 	}
 	
 	/**
-	 * Configuração inicial do painel Configurações, como:
-	 * dimensão, layout e borda
+	 * Criação de painel para conexão de componentes
+	 * @param lin Quantidade de linhas no {@link GridLayout}
+	 * @param col Quantidade de colunas no {@link GridLayout}
+	 * @param larg Largura do painel
+	 * @param alt Altura do painel
+	 * @param titulo Título a ser posto na borda
+	 * @param mensagem Mensagem com indicações das tarefas da região
+	 * @return Painel criado
 	 */
-	private void configurarPainelConfiguracoes (){
-		painelConfiguracoes = new JPanel();
-		dimensaoAvulsa = new Dimension (250, 125);
+	private JPanel criarPainel (int lin, int col, int larg, int alt, String titulo, String mensagem){
+		painelAvulso = new JPanel ();
 		
-		//painelConfiguracoes.setLayout(new FlowLayout());
-		painelConfiguracoes.setLayout (new GridLayout(4, 1, 1, 2));
-		//painelConfiguracoes.setLayout (new BoxLayout(painelPrincipal, BoxLayout.Y_AXIS));
+		dimensaoAvulsa = new Dimension(larg, alt);
 		
-		painelConfiguracoes.setMaximumSize (dimensaoAvulsa);
-		painelConfiguracoes.setMinimumSize (dimensaoAvulsa);
-		painelConfiguracoes.setPreferredSize(dimensaoAvulsa);
+		painelAvulso.setLayout (new GridLayout(lin, col));
+				
+		painelAvulso.setMaximumSize(dimensaoAvulsa);
+		painelAvulso.setMinimumSize(dimensaoAvulsa);
+		painelAvulso.setPreferredSize(dimensaoAvulsa);
+		
+		painelAvulso.setOpaque (true);
+        
+		painelAvulso.setBorder (BorderFactory.createTitledBorder(titulo));
+        painelAvulso.setToolTipText(mensagem);
+        
+        return painelAvulso;
+	}
+	
+	/**
+	 * Criação de painel para conexão de componentes
+	 * @param lin Quantidade de linhas no {@link GridLayout}
+	 * @param col Quantidade de colunas no {@link GridLayout}
+	 * @param hgap Lacuna na horizontal, característica do {@link GridLayout}
+	 * @param vgap Lacuna na vertical, característica do {@link GridLayout}
+	 * @param larg Largura do painel
+	 * @param alt Altura do painel
+	 * @param titulo Título a ser posto na borda
+	 * @param mensagem Mensagem com indicações das tarefas da região
+	 * @return Painel criado
+	 */
+	private JPanel criarPainel (int lin, int col, int hgap, int vgap, int larg, int alt, String titulo, String mensagem){
+		painelAvulso = new JPanel ();
+		
+		dimensaoAvulsa = new Dimension(larg, alt);
+		
+		painelAvulso.setLayout (new GridLayout(lin, col));
+				
+		painelAvulso.setMaximumSize(dimensaoAvulsa);
+		painelAvulso.setMinimumSize(dimensaoAvulsa);
+		painelAvulso.setPreferredSize(dimensaoAvulsa);
+		
+		painelAvulso.setOpaque (true);
+        
+		painelAvulso.setBorder (BorderFactory.createTitledBorder(titulo));
+        painelAvulso.setToolTipText(mensagem);
+        
+        return painelAvulso;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
-		painelConfiguracoes.setOpaque (true);
-        
-        //Border caixaPrincipal = BorderFactory.createEmptyBorder (5, 5, 5, 5);
-        //painelConfiguracoes.setBorder (caixaPrincipal);
-		painelConfiguracoes.setBorder (BorderFactory.createTitledBorder(" Configurações Globais: "));
-		painelConfiguracoes.setToolTipText ("Configurações habilitadas a atingir todos os itens em estoque");
-	}
-
-	/**
-	 * Configuração inicial do painel Direita, como:
-	 * dimensão, layout e borda
-	 */
-	private void configurarPainelDireita (){
-		painelDireita = new JPanel ();
-		
-		dimensaoAvulsa = new Dimension(300, alturaMaxima);
-		
-		//painelDireita.setLayout (new GridLayout(1, 2));
-		//painelDireita.setLayout (new BoxLayout(painelPrincipal, BoxLayout.Y_AXIS));
-		painelDireita.setLayout (new BoxLayout(painelDireita, BoxLayout.X_AXIS));
-		
-		painelDireita.setMaximumSize(dimensaoAvulsa);
-		painelDireita.setMinimumSize(dimensaoAvulsa);
-		painelDireita.setPreferredSize(dimensaoAvulsa);
-		
-		painelDireita.setOpaque (true);
-        
-        //Border caixaPrincipal = BorderFactory.createEmptyBorder (10, 10, 10, 10);
-        //painelDireita.setBorder (caixaPrincipal);
-        painelDireita.setBorder (BorderFactory.createTitledBorder(" Itens em estoque: "));
-        painelDireita.setToolTipText("Descritivo básico dos itens em estoque");
-	}
 
 
+	
+	
 	/**
 	 * Construção do painel Abrir, com a inserção dos componentes
 	 * necessários
 	 */
 	private void construirPainelAbrir (){
 		construirAbrirItem("Listagem:", "Arquivo base para a catalogação dos itens em estoque",
-							"nomeArqListagem", "nome do arquivo da listagem",
+							"nomeArqListagem", "<nome_arquivol_listagem>",
 							"abrirListagem", "Abrir", "Busca do arquivo base para a catalogação dos itens em estoque",
 							nomeArqListagem, botaoAbrirListagem);
 		
 		construirAbrirItem("Histórico:", "Arquivo base para o levantamento do histórico dos itens em estoque",
-							"nomeArqHistorico", "nome do arquivo do histórico",
+							"nomeArqHistorico", "<nome_arquivo_histórico>",
 							"abrirHistorico", "Abrir", "Busca do arquivo base para o levantamento do histórico dos itens em estoque",
 							nomeArqHistorico, botaoAbrirHistorico);
 	}
@@ -294,10 +410,13 @@ public class InterfaceGrafica implements DocumentListener, MouseListener, Action
 							"nivelS", "95",
 							nivelSeguranca, marcarTodosFS);
 		
-		construirRestaurarItem ();
+		
+		
+		construirBotaoPaineis ("restaurarTodos", "Restaurar itens",
+								"Restaurar todos os itens às configurações default",
+								true, restaurarTodos, painelConfiguracoes);
 		
 	}
-
 
 	/**
 	 * Construção padrão dos itens que compõem o painel Abrir
@@ -385,18 +504,137 @@ public class InterfaceGrafica implements DocumentListener, MouseListener, Action
 	 * Construção do botão de restaurar as configurações de todos os itens
 	 * em estoque
 	 */
-	private void construirRestaurarItem (){
-		painelAvulso = new JPanel ();
+	private void construirBotaoPaineis (String nomeBT, String textoBT,
+										String mensagemBT, boolean habilitar,
+										JButton btAplicado, JPanel painelAplicado){
+		JPanel painelAvulso2 = new JPanel ();
 		
-		restaurarTodos = criarBotao("restaurarTodos", "Restaurar itens" , true, 120, 20);
-		restaurarTodos.setToolTipText("Restaurar todos os itens às configurações default");
+		btAplicado = criarBotao(nomeBT, textoBT , habilitar, 120, 20);
+		btAplicado.setToolTipText(mensagemBT);
 		
-		painelAvulso.add(restaurarTodos);
+		painelAvulso2.add(btAplicado);
 		
-		painelConfiguracoes.add(painelAvulso);		
+		painelAplicado.add(painelAvulso2);
 	}
 
+	/**
+	 * Construlão da tabela com os itens existentes em estoque
+	 */
+	private void construirTabelaItens (){
+		painelAvulso = new JPanel ();
+		
+		String[][] dados = {null}; 
+		String cabecalho[] = {"Estoque Min", "Estoque Máx",
+							  "Código", "Descrição",
+							  "Qnt."};
+		int tamanho[] = {90, 90, 60, 150, 60};
+		
+		modeloTabelaDados = new DefaultTableModel (dados, cabecalho){
+			private static final long serialVersionUID = 1L;
 
+			@Override
+		    public Class<?> getColumnClass(int column) {
+				if (column < 2)
+					return Boolean.class;
+				else
+					return super.getColumnClass(column);
+			}
+		};
+		
+		tabelaDados = new JTable(modeloTabelaDados);
+		JScrollPane planoRolante = new JScrollPane(tabelaDados);
+		
+		confTamColTabela(tabelaDados, tamanho);
+		
+		tabelaDados.getTableHeader().setReorderingAllowed(false);
+		
+		tabelaDados.addPropertyChangeListener(this);
+		
+		for (int i = 0; i < 30; i++)
+			modeloTabelaDados.insertRow (i, new Object[]{false, false, 0, 0, 0});
+		
+		painelAvulso.add(planoRolante);
+		
+		painelItensEstoque.add(painelAvulso);
+	}
+
+	/**
+	 * Construção do painel Manipulação, com a inserção dos componentes
+	 * necessários
+	 */
+	private void construirPainelManipulacao (){
+		construirBotaoPaineis ("salvarListagem", "Salvar",
+								"Salvar alteração do estoque",
+								false, salvarListagem, painelManipulacao);
+		
+		construirBotaoPaineis ("exibirHistórico", "Histórico",
+								"Exibir histórico completo dos itens",
+								true, exibirHistorico, painelManipulacao);
+		
+		construirBotaoPaineis ("gerarRelatorio", "Gerar Relatorio",
+								"Gerar relatório com os itens marcados",
+								true, gerarRelatorio, painelManipulacao);
+		
+		painelManipulacao.add(getEspacoVazio(250, 20));
+		
+		construirManiEstoque ("Estoque Min:", "Operações básicas sobre o estoque mínimo",
+								markTodosMin, "markTodosMin", desmarkTodosMin, "desmarkTodosMin",
+								calcMin, "calcMin");
+		
+		painelManipulacao.add(getEspacoVazio(250, 20));
+		
+		construirManiEstoque ("Estoque Max:", "Operações básicas sobre o estoque máximo",
+								markTodosMax, "markTodosMax", desmarkTodosMax, "desmarkTodosMax",
+								calcMax, "calcMax");
+		
+		painelManipulacao.add(getEspacoVazio(250, 130));
+	}
+	
+	/**
+	 * Construção dos ambientes controladores das operações sobre o estoque
+	 * @param descricaoID Descrição do ambiente
+	 * @param mensagemID Mensagem auxiliar do ambiente
+	 * @param marcar Ação de marcar
+	 * @param markID Identificação da ação de marcar
+	 * @param desmarcar Ação de desmarcar
+	 * @param desmarkID Identificação da ação de desmarcar
+	 * @param calcular Ação de calcular
+	 * @param calcID Identificação da ação de calcular
+	 */
+	private void construirManiEstoque (String descricaoID, String mensagemID,
+										JButton marcar, String markID, 
+										JButton desmarcar, String desmarkID,
+										JButton calcular, String calcID){
+		painelAvulso = new JPanel ();
+		painelAvulso.setLayout(new GridLayout(4, 1));
+		
+		dimensaoAvulsa = new Dimension (250, 100);
+		
+		painelAvulso.setMaximumSize (dimensaoAvulsa);
+		painelAvulso.setMinimumSize (dimensaoAvulsa);
+		painelAvulso.setPreferredSize(dimensaoAvulsa);
+					
+		botaoAvulso = criarIdentificacao (descricaoID, false);
+		botaoAvulso.setToolTipText(mensagemID);
+		painelAvulso.add(botaoAvulso);
+		
+		construirBotaoPaineis (markID, "Marcar todos",
+								"Seleciona todos os itens para o cálculo",
+								true, marcar, painelAvulso);
+		
+		construirBotaoPaineis (desmarkID, "Desmarcar todos",
+								"Libera todos os itens do cálculo",
+								true, desmarcar, painelAvulso);
+		
+		construirBotaoPaineis (calcID, "Calcular",
+								"Cálculo com todos os itens selecionados",
+								true, calcular, painelAvulso);
+		
+		painelManipulacao.add(painelAvulso);
+	}
+	
+	
+	
 
 	/**
 	 * Criação de identificação, textos, a serem inseridas na área
@@ -426,7 +664,6 @@ public class InterfaceGrafica implements DocumentListener, MouseListener, Action
 		return botaoAvulso;
 	}
 	
-
 	/**
 	 * Criação de uma área de texto padrão
 	 * @param nome			Nome identificador a ser atribuído
@@ -455,8 +692,7 @@ public class InterfaceGrafica implements DocumentListener, MouseListener, Action
 				
 		return novo;
 	}
-	
-	
+		
 	/**
 	 * Criação de um botão padrão
 	 * @param descricao Identificação do botao no tratamento de ações
@@ -523,7 +759,6 @@ public class InterfaceGrafica implements DocumentListener, MouseListener, Action
 		return caixa;
 	}
 	
-
 	/**
 	 * Criação de uma caixa de marcação padrão
 	 * @return	Caixa construída
@@ -553,7 +788,19 @@ public class InterfaceGrafica implements DocumentListener, MouseListener, Action
 		return botaoAvulso;
 	}
 	
-	
+	/**
+	 * Configuração do largura das colunas da tabela
+	 * @param tabela Tabela a ser configurada
+	 * @param tamanho Larguras a serem atribuídas
+	 */
+	private void confTamColTabela (JTable tabela, int[] tamanho){
+		for (int col = 0; col < tamanho.length; col++){
+			tabela.getColumnModel().getColumn(col).setMaxWidth(tamanho[col]);
+			tabela.getColumnModel().getColumn(col).setMinWidth(tamanho[col]);
+			tabela.getColumnModel().getColumn(col).setPreferredWidth(tamanho[col]);
+			tabela.getColumnModel().getColumn(col).setResizable(false);
+		}
+	}
 	
 	
 	
@@ -654,7 +901,9 @@ public class InterfaceGrafica implements DocumentListener, MouseListener, Action
 	
 	@Override
 	public void actionPerformed(ActionEvent evento) {
-		// TODO Auto-generated method stub
+		if ("abrirListagem".equals(evento.getActionCommand())){
+			Comandos.abrirAqrListagem();
+		}
 		
 	}
 
@@ -663,5 +912,28 @@ public class InterfaceGrafica implements DocumentListener, MouseListener, Action
 	public void itemStateChanged(ItemEvent evento) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evento) {
+		if (!tabelaDados.isEditing())
+			System.out.println("Editou tabela\n");
+		else{
+			int lin = tabelaDados.getSelectedRow();
+			int col = tabelaDados.getSelectedColumn();
+			
+			if ((lin != -1) && (col != -1)){
+				Object resp = tabelaDados.getValueAt(lin, col);
+				
+				if (resp.toString().equals("true"))
+					resp = "false";
+				else
+					resp = "true";
+				
+			System.out.println("Editando tabela");
+			System.out.println("Valor em [" + lin + "][" + col + "]"
+								+ " -> " + resp);
+			}
+		}
 	}
 }
