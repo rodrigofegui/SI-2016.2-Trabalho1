@@ -1,6 +1,7 @@
 package gui;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -13,6 +14,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.LinkedList;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -39,47 +41,50 @@ import javax.swing.table.DefaultTableModel;
 public class InterfaceGrafica implements DocumentListener, MouseListener,
 										ActionListener, ItemListener, PropertyChangeListener {
 	static JFrame janelaPrincipal = null;
-	static final int	comprimentoMaximo	= 760 + 250;
+	static final int	comprimentoMaximo	= 1010;
 	static final int	alturaMaxima		= 493;
 	
 	private  JPanel painelPrincipal = null;
 		private  JPanel painelEsquerda = null;
 			private JPanel painelAbrir = null;
-				public static JTextField nomeArqListagem = null;
-				private JButton botaoAbrirListagem = null;
-				private JTextField nomeArqHistorico = null;
-				private JButton botaoAbrirHistorico = null;
+				static JTextField nomeArqListagem = null;
+				static JButton botaoAbrirListagem = null;
+				static JTextField nomeArqHistorico = null;
+				static JButton botaoAbrirHistorico = null;
 			private JPanel painelConfiguracoes = null;
-				private JTextField periodoLT = null;
-				private JCheckBox marcarTodosLT = null;
-				private JTextField periodoPP = null;
-				private JCheckBox marcarTodosPP = null;
-				private JTextField nivelSeguranca = null;
-				private JCheckBox marcarTodosFS = null;
-				private JButton restaurarTodos = null;
+				static JTextField periodoLT = null;
+				static JCheckBox marcarTodosLT = null;
+				static JTextField periodoPP = null;
+				static JCheckBox marcarTodosPP = null;
+				static JTextField nivelSeguranca = null;
+				static JCheckBox marcarTodosFS = null;
+				static JButton restaurarTodos = null;
 		private  JPanel painelDireita = null;
 			private JPanel painelItensEstoque = null;
-				private DefaultTableModel modeloTabelaDados = null;	
+				static DefaultTableModel modeloTabelaDados = null;	
 					private JTable tabelaDados = null;
 			private JPanel painelManipulacao = null;
-				private JButton salvarListagem = null;
-				private JButton exibirHistorico = null;
-				private JButton gerarRelatorio = null;
-				private JButton markTodosMin = null;
-				private JButton desmarkTodosMin = null;
-				private JButton calcMin = null;
-				private JButton markTodosMax = null;
-				private JButton desmarkTodosMax = null;
-				private JButton calcMax = null;
+				static JButton salvarListagem = null;
+				static JButton exibirHistorico = null;
+				static JButton gerarRelatorio = null;
+				static JButton markTodosMin = null;
+				static JButton desmarkTodosMin = null;
+				static JButton calcMin = null;
+				static JButton markTodosMax = null;
+				static JButton desmarkTodosMax = null;
+				static JButton calcMax = null;
 	/**
 	 * Itens descartáveis, mas utilizados por muitos
 	 */
+	private LinkedList<Object> lista;
 	private JPanel painelAvulso;
 	private JButton botaoAvulso;
 	private Dimension dimensaoAvulsa;
 	
 	
-	
+	/**********************************************************
+	 * Construtores
+	 **********************************************************/
 	/**
 	 * Construção de uma Interface Gráfica por maneira default
 	 */
@@ -107,6 +112,10 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 		//*/
 	}
 	
+	
+	/**********************************************************
+	 * Aquisição de Painel
+	 **********************************************************/
 	/**
 	 * Estrutura construída no painel principal da aplicação
 	 * @return Painel construído
@@ -114,9 +123,7 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 	private JPanel getPainelPrincipal(){
 		painelPrincipal = criarPainel(1, 10, comprimentoMaximo, alturaMaxima);
 		
-		painelPrincipal.add(getPainelEsquerda());
-		
-		painelPrincipal.add(getPainelDireita());
+		painelPrincipal = montarPainelPrincipal (painelPrincipal);
 		
 		return painelPrincipal;
 	}
@@ -127,10 +134,8 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 	 */
 	private JPanel getPainelEsquerda (){
 		painelEsquerda = criarPainel(2, 0, 250, alturaMaxima);
-		
-		painelEsquerda.add(getPainelAbrir());
-		
-		painelEsquerda.add(getPainelConfiguracoesGerais());
+
+		painelEsquerda = montarPainelEsquerdo (painelEsquerda);
 		
 		return painelEsquerda;
 	}
@@ -142,9 +147,9 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 	private JPanel getPainelAbrir (){
 		painelAbrir = criarPainel(2, 1, 1, 2, 250, 120,
 									" Abrir Arquivos: ", "Arquivos necessários para a construção do estoque");
-		
-		construirPainelAbrir();
-		
+
+		painelAbrir = montarPainelAberturas (painelAbrir);
+
 		return painelAbrir;
 	}
 	
@@ -156,8 +161,8 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 		painelConfiguracoes = criarPainel(4, 1, 1, 2, 250, 180,
 											" Configurações Globais: ", "Configurações habilitadas a atingir todos os itens em estoque");
 		
-		construirPainelConfiguracoes();
-		
+		painelConfiguracoes = montarPainelConfiguracao (painelConfiguracoes);
+			
 		return painelConfiguracoes;
 	}
 	
@@ -169,9 +174,7 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 		painelDireita = criarPainel (1, 740, alturaMaxima, " Estoque: ",
 									"Informações e configurações que afetam o estoque");
 		
-		painelDireita.add(getPainelItensEstoque());
-				
-		painelDireita.add(getPainelManipulacao());
+		painelDireita = montarPainelDireito (painelDireita);
 		
 		return painelDireita;
 	}
@@ -183,7 +186,7 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 	private JPanel getPainelItensEstoque (){
 		painelItensEstoque = criarPainel (1, 1, 480, alturaMaxima, " Itens em estoque: ", "Descritivo básico dos itens em estoque");
 				
-		construirTabelaItens();
+		painelItensEstoque = montarPainelItens (painelItensEstoque);
 		
 		return painelItensEstoque;
 	}
@@ -195,13 +198,250 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 	private JPanel getPainelManipulacao (){
 		painelManipulacao = criarPainel (2, 250, alturaMaxima, " Configurações: ", "Configurações pertinentes ao estoque");
 		
-		construirPainelManipulacao ();
+		painelManipulacao = montarPainelManipulacao (painelManipulacao);
 		
 		return painelManipulacao;
 	}
+
+	
+	/**********************************************************
+	 * Montagem de painel
+	 **********************************************************/
+	/**
+	 * Construção de um painel principal da interface
+	 * @param painelBase Painel antes da inserção
+	 * @return Painel construído
+	 */
+	private JPanel montarPainelPrincipal (JPanel painelBase){
+		painelBase.add(getPainelEsquerda());
+		
+		painelBase.add(getPainelDireita());
+		
+		return painelBase;
+	}
+	
+	/**
+	 * Construção de um painel esquerdo da interface
+	 * @param painelBase Painel antes da inserção
+	 * @return Painel construído
+	 */
+	private JPanel montarPainelEsquerdo (JPanel painelBase){
+		painelBase.add(getPainelAbrir());
+
+		painelBase.add(getPainelConfiguracoesGerais());
+		
+		return painelBase;
+	}
+	
+	/**
+	 * Construção de um painel responsável pelas aberturas externas
+	 * @param painelBase Painel antes da inserção
+	 * @return Painel construído
+	 */
+	private JPanel montarPainelAberturas (JPanel painelBase){
+		lista = criarPainelAberturaArq ("Listagem:", "Arquivo base para a catalogação dos itens em estoque",
+								"nomeArqListagem", "<nome_arquivol_listagem>",
+								"abrirListagem", "Abrir", "Busca do arquivo base para a catalogação dos itens em estoque");
+		
+		nomeArqListagem = (JTextField) lista.get(1);
+		botaoAbrirListagem = (JButton) lista.get(2);
+		painelBase.add((JPanel) lista.getFirst());
+		lista.clear();
+
+		lista = criarPainelAberturaArq ("Histórico:", "Arquivo base para o levantamento do histórico dos itens em estoque",
+								"nomeArqHistorico", "<nome_arquivo_histórico>",
+								"abrirHistorico", "Abrir", "Busca do arquivo base para o levantamento do histórico dos itens em estoque");
+
+		nomeArqHistorico = (JTextField) lista.get(1);
+		botaoAbrirHistorico = (JButton) lista.get(2);
+		painelBase.add((JPanel) lista.getFirst());
+		lista.clear();
+		
+		return painelBase;
+	}
+	
+	/**
+	 * Construção de um painel responsável pelas configurações
+	 * que afetam a todos o estoque
+	 * @param painelBase Painel antes da inserção
+	 * @return Painel construído
+	 */
+	private JPanel montarPainelConfiguracao (JPanel painelBase){
+		lista = criarPainelItensConf("Lead Time:", "Tempo gasto para o reabastecimento de um dado item",
+								"periodoLT", "2");
+
+		periodoLT = (JTextField) lista.get(1);
+		marcarTodosLT = (JCheckBox) lista.get(2);
+		painelBase.add((JPanel) lista.getFirst());
+		lista.clear();
+		
+		lista = criarPainelItensConf("Período:", "Tempo a ser considerado no cálculo do estoque",
+								"periodoPP", "1");
+		
+		periodoPP = (JTextField) lista.get(1);
+		marcarTodosPP = (JCheckBox) lista.get(2);
+		painelBase.add((JPanel) lista.getFirst());
+		lista.clear();
+		
+		lista = criarPainelItensConf("Fator Segurança:", "Nível de segurança sobre o suprimento de estoque, em %",
+								"nivelS", "95");
+		
+		nivelSeguranca = (JTextField) lista.get(1);
+		marcarTodosFS = (JCheckBox) lista.get(2);
+		painelBase.add((JPanel) lista.getFirst());
+		lista.clear();
+		
+		lista = criarPainelBotao("restaurarTodos", "Restaurar itens",
+									"Restaurar todos os itens às configurações default", true);
+		
+		restaurarTodos = (JButton) lista.get(1);
+		painelBase.add((JPanel) lista.getFirst());
+		lista.clear();
+		
+		return painelBase;
+	}
+	
+	/**
+	 * Construção de um painel responsável pelas operações do 
+	 * estoque
+	 * @param painelBase Painel antes da inserção
+	 * @return Painel construído
+	 */
+	private JPanel montarPainelDireito (JPanel painelBase){
+		painelBase.add(getPainelItensEstoque());
+		
+		painelBase.add(getPainelManipulacao());
+		
+		return painelBase;
+	}
+	
+	/**
+	 * Construção de um painel responsável pela demonstração
+	 * dos itens em estoque
+	 * @param painelBase Painel antes da inserção
+	 * @return Painel construído
+	 */
+	private JPanel montarPainelItens (JPanel painelBase){
+		String[][] dados = {null}; 
+		String cabecalho[] = {"Estoque Min", "Estoque Máx",
+							  "Código", "Descrição",
+							  "Qnt."};
+		int larg[] = {90, 90, 60, 150, 60};
+		
+		lista = criarPainelTabela (dados, cabecalho, larg);
+		
+		modeloTabelaDados = (DefaultTableModel) lista.get(1);
+		tabelaDados = (JTable) lista.get(2);
+		painelBase.add((JPanel) lista.getFirst());
+		lista.clear();
+		
+		modeloTabelaDados.insertRow(0, new Object[]{false, false, 1,2,3});
+		
+		return painelBase;
+	}
+	
+	/**
+	 * Construção de um painel responsável pela manipulação
+	 * do estoque
+	 * @param painelBase Painel antes da inserção
+	 * @return Painel construído
+	 */
+	private JPanel montarPainelManipulacao (JPanel painelBase){
+		lista = criarPainelBotao("salvarListagem", "Salvar", "Salvar alteração do estoque", false);
+
+		salvarListagem = (JButton) lista.get(1);
+		painelBase.add((JPanel) lista.getFirst());
+		lista.clear();
+
+		lista = criarPainelBotao("exibirHistórico", "Histórico", "Exibir histórico completo dos itens", true);
+
+		exibirHistorico = (JButton) lista.get(1);
+		painelBase.add((JPanel) lista.getFirst());
+		lista.clear();
+		
+		lista = criarPainelBotao("gerarRelatorio", "Gerar Relatorio", "Gerar relatório com os itens marcados", true);
+
+		gerarRelatorio = (JButton) lista.get(1);
+		painelBase.add((JPanel) lista.getFirst());
+		lista.clear();
+		
+		painelBase.add(criarEspacoVazio (250, 50));
+		
+		lista = criarPainelEstoque ("Estoque Min:", "Operações básicas sobre o estoque mínimo",
+									"markTodosMin", "desmarkTodosMin", "calcMin");
+		
+		markTodosMin = (JButton) lista.get(1);
+		desmarkTodosMin = (JButton) lista.get(2);
+		desmarkTodosMin = (JButton) lista.get(3);
+		painelBase.add((JPanel) lista.getFirst());
+		lista.clear();
+		
+		lista = criarPainelEstoque ("Estoque Max:", "Operações básicas sobre o estoque máximo",
+									"markTodosMax", "desmarkTodosMax", "calcMax");
+
+		markTodosMax = (JButton) lista.get(1);
+		desmarkTodosMax = (JButton) lista.get(2);
+		desmarkTodosMax = (JButton) lista.get(3);
+		painelBase.add((JPanel) lista.getFirst());
+		lista.clear();
+		
+		//painelBase.add(criarEspacoVazio (250, 120));
+		
+		return painelBase;
+	}
 	
 	
+	/**********************************************************
+	 * Criação de componente ou conjunto de componentes
+	 **********************************************************/
+	/**
+	 * Criação de painel para conexão de componentes
+	 * @return Painel criado
+	 */
+	public JPanel criarPainel (){
+		painelAvulso = new JPanel ();
+		        
+        return painelAvulso;
+	}
 	
+	/**
+	 * Criação de painel para conexão de componentes
+	 * @param layout Escolha do layout aplicado ao painel, onde:
+	 * 0 equivale a {@link FlowLayout}
+	 * 1 equivale a {@link BoxLayout} em X
+	 * 2 equivale a {@link BoxLayout} em Y
+	 * @return Painel criado
+	 */
+	public JPanel criarPainel (int layout){
+		painelAvulso = criarPainel();
+				
+		switch (layout){
+			case 0:
+				painelAvulso.setLayout (new FlowLayout());
+				break;
+			case 1:
+				painelAvulso.setLayout (new BoxLayout(painelAvulso, BoxLayout.X_AXIS));
+				break;
+			case 2:
+				painelAvulso.setLayout (new BoxLayout(painelAvulso, BoxLayout.Y_AXIS));
+		}
+		        
+        return painelAvulso;
+	}
+	
+	/**
+	 * Criação de painel para conexão de componentes
+	 * @param lin Quantidade de linhas no {@link GridLayout}
+	 * @param col Quantidade de colunas no {@link GridLayout}
+	 * @return Painel criado
+	 */
+	public JPanel criarPainel (int lin, int col){
+		painelAvulso = criarPainel();
+		
+		painelAvulso.setLayout (new GridLayout(lin, col));
+        
+        return painelAvulso;
+	}
 	
 	/**
 	 * Criação de painel para conexão de componentes
@@ -215,25 +455,10 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 	 * @param alt Altura do painel
 	 * @return Painel criado
 	 */
-	private JPanel criarPainel (int layout, int borda, int larg, int alt){
-		painelAvulso = new JPanel ();
+	public JPanel criarPainel (int layout, int borda, int larg, int alt){
+		painelAvulso = criarPainel(layout);
 		
-		dimensaoAvulsa = new Dimension(larg, alt);
-		
-		switch (layout){
-			case 0:
-				painelAvulso.setLayout (new FlowLayout());
-				break;
-			case 1:
-				painelAvulso.setLayout (new BoxLayout(painelAvulso, BoxLayout.X_AXIS));
-				break;
-			case 2:
-				painelAvulso.setLayout (new BoxLayout(painelAvulso, BoxLayout.Y_AXIS));
-		}
-		
-		painelAvulso.setMaximumSize(dimensaoAvulsa);
-		painelAvulso.setMinimumSize(dimensaoAvulsa);
-		painelAvulso.setPreferredSize(dimensaoAvulsa);
+		painelAvulso = (JPanel) setDimensao(painelAvulso, larg, alt);
 		
 		painelAvulso.setOpaque (true);
         
@@ -255,10 +480,8 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 	 * @param mensagem Mensagem com indicações das tarefas da região
 	 * @return Painel criado
 	 */
-	private JPanel criarPainel (int layout, int larg, int alt, String titulo, String mensagem){
+	public JPanel criarPainel (int layout, int larg, int alt, String titulo, String mensagem){
 		painelAvulso = new JPanel ();
-		
-		dimensaoAvulsa = new Dimension(larg, alt);
 		
 		switch (layout){
 			case 0:
@@ -271,9 +494,7 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 				painelAvulso.setLayout (new BoxLayout(painelAvulso, BoxLayout.Y_AXIS));
 		}
 		
-		painelAvulso.setMaximumSize(dimensaoAvulsa);
-		painelAvulso.setMinimumSize(dimensaoAvulsa);
-		painelAvulso.setPreferredSize(dimensaoAvulsa);
+		painelAvulso = (JPanel) setDimensao(painelAvulso, larg, alt);
 		
 		painelAvulso.setOpaque (true);
         
@@ -294,15 +515,9 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 	 * @return Painel criado
 	 */
 	private JPanel criarPainel (int lin, int col, int larg, int alt, String titulo, String mensagem){
-		painelAvulso = new JPanel ();
-		
-		dimensaoAvulsa = new Dimension(larg, alt);
-		
-		painelAvulso.setLayout (new GridLayout(lin, col));
+		painelAvulso = criarPainel(lin, col);
 				
-		painelAvulso.setMaximumSize(dimensaoAvulsa);
-		painelAvulso.setMinimumSize(dimensaoAvulsa);
-		painelAvulso.setPreferredSize(dimensaoAvulsa);
+		painelAvulso = (JPanel) setDimensao(painelAvulso, larg, alt);
 		
 		painelAvulso.setOpaque (true);
         
@@ -327,13 +542,9 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 	private JPanel criarPainel (int lin, int col, int hgap, int vgap, int larg, int alt, String titulo, String mensagem){
 		painelAvulso = new JPanel ();
 		
-		dimensaoAvulsa = new Dimension(larg, alt);
-		
 		painelAvulso.setLayout (new GridLayout(lin, col));
 				
-		painelAvulso.setMaximumSize(dimensaoAvulsa);
-		painelAvulso.setMinimumSize(dimensaoAvulsa);
-		painelAvulso.setPreferredSize(dimensaoAvulsa);
+		painelAvulso = (JPanel) setDimensao(painelAvulso, larg, alt);
 		
 		painelAvulso.setOpaque (true);
         
@@ -342,84 +553,9 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
         
         return painelAvulso;
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
-
-
-	
-	
+		
 	/**
-	 * Construção do painel Abrir, com a inserção dos componentes
-	 * necessários
-	 */
-	private void construirPainelAbrir (){
-		construirAbrirItem("Listagem:", "Arquivo base para a catalogação dos itens em estoque",
-							"nomeArqListagem", "<nome_arquivol_listagem>",
-							"abrirListagem", "Abrir", "Busca do arquivo base para a catalogação dos itens em estoque",
-							nomeArqListagem, botaoAbrirListagem);
-		
-		construirAbrirItem("Histórico:", "Arquivo base para o levantamento do histórico dos itens em estoque",
-							"nomeArqHistorico", "<nome_arquivo_histórico>",
-							"abrirHistorico", "Abrir", "Busca do arquivo base para o levantamento do histórico dos itens em estoque",
-							nomeArqHistorico, botaoAbrirHistorico);
-	}
-	
-	/**
-	 * Construção do painel Configurações, com a inserção dos componentes
-	 * necessários
-	 */
-	private void construirPainelConfiguracoes (){
-		construirConfItem("Lead Time:", "Tempo gasto para o reabastecimento de um dado item",
-							"periodoLT", "2",
-							periodoLT, marcarTodosLT);
-		
-		construirConfItem("Período:", "Tempo a ser considerado no cálculo do estoque",
-							"periodoPP", "1",
-							periodoPP, marcarTodosPP);
-		
-		construirConfItem(	"Fator Segurança:", "Nível de segurança sobre o suprimento de estoque, em %",
-							"nivelS", "95",
-							nivelSeguranca, marcarTodosFS);
-		
-		
-		
-		construirBotaoPaineis ("restaurarTodos", "Restaurar itens",
-								"Restaurar todos os itens às configurações default",
-								true, restaurarTodos, painelConfiguracoes);
-		
-	}
-
-	/**
-	 * Construção padrão dos itens que compõem o painel Abrir
+	 * Construção padrão para o conjunto responsável pela abertura do arquivo
 	 * @param descricaoID Descrição do item
 	 * @param mensagemID Mensagem explicativa o item
 	 * @param nomeTF Identificador do JTextField correspondente
@@ -429,107 +565,345 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 	 * @param mensagemBT Mensagem explicativa do JButton
 	 * @param tfAplicado JTextField correspondente
 	 * @param btAplicado JButton correspondente
+	 * @return Lista com os itens construídos
 	 */
-	private void construirAbrirItem (String descricaoID, String mensagemID,
-									String nomeTF, String textoTF,
-									String nomeBT, String textoBT, String mensagemBT,
-									JTextField tfAplicado, JButton btAplicado){
-		painelAvulso = new JPanel ();
-		painelAvulso.setLayout(new GridLayout(2, 1));
-					
-		botaoAvulso = criarIdentificacao (descricaoID, false);
-		botaoAvulso.setToolTipText(mensagemID);
+	private LinkedList<Object> criarPainelAberturaArq (String descricaoID, String mensagemID,
+										String nomeTF, String textoTF,
+										String nomeBT, String textoBT, String mensagemBT){
+		JPanel painel = criarPainel (2, 1);
 		
-		painelAvulso.add(botaoAvulso);		
+		JPanel painelAvulso2 = criarPainel(1);
 		
-		JPanel painelAvulso2 = new JPanel ();
-		painelAvulso2.setLayout(new BoxLayout(painelAvulso2, BoxLayout.X_AXIS));
-		
-		tfAplicado = criarTextField (nomeTF, textoTF, false);
+		JTextField tfAplicado = criarTextField (nomeTF, textoTF, false);
 		tfAplicado.setEditable(false);
 		
-		btAplicado = criarBotao (nomeBT, textoBT, true);
-		btAplicado.setToolTipText(mensagemBT);
+		JButton btAplicado = criarBotao (nomeBT, textoBT, mensagemBT);
 				
 		painelAvulso2.add(tfAplicado);
-		painelAvulso2.add(btAplicado);		
-		painelAvulso.add(painelAvulso2);
+		painelAvulso2.add(btAplicado);
 		
-		painelAbrir.add(painelAvulso);
+		botaoAvulso = criarIdentificacao (descricaoID, mensagemID);
+		
+		painel.add(botaoAvulso);
+		painel.add(painelAvulso2);
+		
+		LinkedList<Object> lista = new LinkedList<Object>();
+		
+		lista.addFirst(painel);
+		lista.add(tfAplicado);
+		lista.add(btAplicado);
+		
+		return lista;
 	}
 	
 	/**
-	 * Construção padrão dos itens que compõem o painel Configurar
-	 * @param descricaoID Descrição do item
-	 * @param mensagemID Mensagem que explica o item
-	 * @param nomeTF Identificador do JTextField correspondente
-	 * @param textoTF Texto inserido no JTextField correspondente
-	 * @param tfAplicado JTextField correspondente
-	 * @param cbAplicado JCheckBox correspondentes
+	 * Criação do padrão de itens, habilitando a edição e uma aplicação
+	 * a todos
+	 * @param descricaoID Identificação do item
+	 * @param mensagemID Mensagem que auxilia no entendimento da
+	 * semântica do componente
+	 * @param nomeTF Nome identificador a ser atribuído ao campo de texto
+	 * @param textoTF Texto iniciado de maneira default
+	 * @return Lista com os itens construídos
 	 */
-	private void construirConfItem (String descricaoID, String mensagemID,
-									String nomeTF, String textoTF,
-									JTextField tfAplicado, JCheckBox cbAplicado){
-		painelAvulso = new JPanel ();
-		painelAvulso.setLayout(new GridLayout(2, 1));
+	private LinkedList<Object> criarPainelItensConf (String descricaoID, String mensagemID,
+														String nomeTF, String textoTF){
+		JPanel painel = criarPainel(2, 1);
+		JPanel painelAvulso2 = criarPainel(1);
 		
-		JPanel painelAvulso2 = new JPanel ();
-		painelAvulso2.setLayout(new BoxLayout(painelAvulso2, BoxLayout.X_AXIS));
-					
-		botaoAvulso = criarIdentificacao (descricaoID, false);
-		botaoAvulso.setHorizontalAlignment(JButton.LEFT);
-		botaoAvulso.setToolTipText (mensagemID);
+		botaoAvulso = criarIdentificacao (descricaoID, mensagemID, 0);
 
-		tfAplicado = criarTextField (nomeTF, textoTF, true);
+		JTextField tfAplicado = criarTextField (nomeTF, textoTF, true);
 		
 		painelAvulso2.add(botaoAvulso);
 		painelAvulso2.add(tfAplicado);
-		painelAvulso.add(painelAvulso2);
+		painel.add(painelAvulso2);
 		
+		painelAvulso2 = criarPainel(1);
 		
-		painelAvulso2 = new JPanel ();
-		painelAvulso2.setLayout(new BoxLayout(painelAvulso2, BoxLayout.X_AXIS));
+		JCheckBox cbAplicado = criarCheckBox();
 		
-		cbAplicado = criarCheckBox();
-		
-		painelAvulso2.add(getEspacoVazio (115, 50));
+		painelAvulso2.add(criarEspacoVazio (115, 50));
 		painelAvulso2.add(cbAplicado);
-		painelAvulso2.add(getAplicarTodos());
-		painelAvulso.add(painelAvulso2);
+		painelAvulso2.add(criarAplicarTodos());
+		painel.add(painelAvulso2);
 		
-		painelConfiguracoes.add(painelAvulso);
+		LinkedList<Object> lista = new LinkedList<Object>();
+		lista.add(painel);
+		lista.add(tfAplicado);
+		lista.add(cbAplicado);
+		
+		return lista;
+	}
+		
+	/**
+	 * Criação de um painel exclusivo para um botão
+	 * @param nomeBT Identificação do botão no tratamento de ações
+	 * @param textoBT Texto a ser posto como inicial
+	 * @param mensagemBT Mensagem que auxilia no entendimento da
+	 * semântica do componente
+	 * @param habilitar Controle da utilização do botão, permitindo o click do
+	 * mouse ou não
+	 * @param btAplicado Botão a ser inserido no painel
+	 * @return Painel criado
+	 */
+	private LinkedList<Object> criarPainelBotao (String nomeBT, String textoBT,
+													String mensagemBT, boolean habilitar){
+		LinkedList<Object> lista = new LinkedList<Object>();
+		painelAvulso = criarPainel();
+		
+		painelAvulso = (JPanel) setDimensao (painelAvulso, 250, 30);
+		
+		JButton btAplicado = criarBotao(nomeBT, textoBT, mensagemBT, habilitar);
+		
+		painelAvulso.add(btAplicado);
+		
+		lista.add(painelAvulso);
+		lista.add(btAplicado);
+		
+		return lista;
 	}
 	
 	/**
-	 * Construção do botão de restaurar as configurações de todos os itens
-	 * em estoque
+	 * Criação de uma tabela padrao
+	 * @param dadosTB Dados a serem inseridos, inicialmente, na tabela
+	 * @param cabecalhoTB Identificador dos dados inseridos
+	 * @param largCol Largura a ser atribuída às colunas da tabela
+	 * @return Tabela construída
 	 */
-	private void construirBotaoPaineis (String nomeBT, String textoBT,
-										String mensagemBT, boolean habilitar,
-										JButton btAplicado, JPanel painelAplicado){
-		JPanel painelAvulso2 = new JPanel ();
+	private LinkedList<Object> criarPainelTabela (String[][] dadosTB, String []cabecalhoTB, int[] largCol){
+		painelAvulso = criarPainel();
 		
-		btAplicado = criarBotao(nomeBT, textoBT , habilitar, 120, 20);
-		btAplicado.setToolTipText(mensagemBT);
+		DefaultTableModel modeloTB = criarModeloTabela (dadosTB, cabecalhoTB);
+		JTable tabela = new JTable(modeloTB);
+		JScrollPane planoRolante = new JScrollPane(tabela);
 		
-		painelAvulso2.add(btAplicado);
+		tabela = setLargTabela(tabela, largCol);
 		
-		painelAplicado.add(painelAvulso2);
+		tabela.getTableHeader().setReorderingAllowed(false);
+		
+		tabela.addPropertyChangeListener(this);
+		
+		painelAvulso.add(planoRolante);
+		
+		LinkedList<Object> lista = new LinkedList<Object>();
+		
+		lista.add(painelAvulso);
+		lista.add(modeloTB);
+		lista.add(tabela);
+		
+		return lista;
 	}
+	
+	private LinkedList<Object> criarPainelEstoque (String descricao, String mensagemAjuda,
+													String markID, String desmarkID, String calcID){
+		LinkedList<Object> listaInterna = new LinkedList<Object>();
+		JPanel painelAvulsoInterno = criarPainel (4, 1);
 
+		painelAvulsoInterno = (JPanel) setDimensao (painelAvulsoInterno, 250, 125);
+		
+		botaoAvulso = criarIdentificacao (descricao, mensagemAjuda);
+		painelAvulsoInterno.add(botaoAvulso);
+		
+		lista = criarPainelBotao(markID, "Marcar todos", "Seleciona todos os itens para o cálculo", true);
+		
+		listaInterna.add(lista.get(1));
+		painelAvulsoInterno.add((JPanel) lista.getFirst());
+		lista.clear();
+		
+		lista = criarPainelBotao(desmarkID, "Desmarcar todos", "Libera todos os itens do cálculo", true);
+		
+		listaInterna.add(lista.get(1));
+		painelAvulsoInterno.add((JPanel) lista.getFirst());
+		lista.clear();
+		
+		lista = criarPainelBotao(calcID, "Calcular", "Cálculo com todos os itens selecionados", true);
+		
+		listaInterna.add(lista.get(1));
+		painelAvulsoInterno.add((JPanel) lista.getFirst());
+		lista.clear();
+		
+		listaInterna.addFirst(painelAvulsoInterno);		
+		
+		return listaInterna;
+	}
+	
 	/**
-	 * Construlão da tabela com os itens existentes em estoque
+	 * Criação de identificação, textos, a serem inseridas na área
+	 * gráfica
+	 * @param texto	Texto a ser posto como inicial 
+	 * @return 			O texto criado
 	 */
-	private void construirTabelaItens (){
-		painelAvulso = new JPanel ();
+	private JButton criarIdentificacao (String texto){
+		botaoAvulso = new JButton();
 		
-		String[][] dados = {null}; 
-		String cabecalho[] = {"Estoque Min", "Estoque Máx",
-							  "Código", "Descrição",
-							  "Qnt."};
-		int tamanho[] = {90, 90, 60, 150, 60};
+		botaoAvulso.setText(texto);
 		
-		modeloTabelaDados = new DefaultTableModel (dados, cabecalho){
+		botaoAvulso.setHorizontalAlignment(JButton.CENTER);
+				
+		botaoAvulso.setBorderPainted(false);
+		botaoAvulso.setContentAreaFilled(false);
+		
+		botaoAvulso = (JButton) setDimensao(botaoAvulso, 120, 50);
+			
+		return botaoAvulso;
+	}
+	
+	/**
+	 * Criação de identificação, textos, a serem inseridas na área
+	 * gráfica
+	 * @param texto	Texto a ser posto como inicial
+	 * @param mensagemAjuda Mensagem que auxilia no entendimento da
+	 * semântica do componente
+	 * @return 			O texto criado
+	 */
+	private JButton criarIdentificacao (String texto, String mensagemAjuda){
+		botaoAvulso = criarIdentificacao(texto);
+		
+		botaoAvulso.setToolTipText(mensagemAjuda);
+			
+		return botaoAvulso;
+	}
+	
+	/**
+	 * Criação de identificação, textos, a serem inseridas na área
+	 * gráfica
+	 * @param texto	Texto a ser posto como inicial
+	 * @param mensagemAjuda Mensagem que auxilia no entendimento da
+	 * semântica do componente
+	 * @param alinhamento Escolha do alinhamento do texto, onde:
+	 * 0 equivale a Left
+	 * 1 equivale a Center
+	 * 2 equivale a Right
+	 * @return 			O texto criado
+	 */
+	private JButton criarIdentificacao (String texto, String mensagemAjuda, int alinhamento){
+		botaoAvulso = criarIdentificacao(texto, mensagemAjuda);
+		
+		switch (alinhamento){
+			case 0:
+				botaoAvulso.setHorizontalAlignment(JButton.LEFT);
+				break;
+			case 1:
+				botaoAvulso.setHorizontalAlignment(JButton.CENTER);
+				break;
+			case 2:
+				botaoAvulso.setHorizontalAlignment(JButton.RIGHT);
+				break;
+		}
+			
+		return botaoAvulso;
+	}
+	
+	/**
+	 * Criação de um botão padrão
+	 * @return Botao já criado
+	 */
+	public JButton criarBotao (){
+		JButton novo = new JButton();
+		
+		return novo;
+	}
+	
+	/**
+	 * Criação de um botão padrão
+	 * @param descricao Identificação do botao no tratamento de ações
+	 * @return			Botao já criado
+	 */
+	public JButton criarBotao (String descricao){
+		JButton novo = criarBotao();
+		
+		novo.setActionCommand(descricao);
+		novo.addActionListener(this);
+		
+		return novo;
+	}
+	
+	/**
+	 * Criação de um botão padrão
+	 * @param descricao Identificação do botao no tratamento de ações
+	 * @param texto		Texto a ser posto como inicial
+	 * @return			Botao já criado
+	 */
+	public JButton criarBotao (String descricao, String texto){
+		JButton novo = criarBotao(descricao);
+		
+		novo.setText(texto);
+		
+		return novo;
+	}
+	
+	/**
+	 * Criação de um botão padrão
+	 * @param descricao Identificação do botao no tratamento de ações
+	 * @param texto		Texto a ser posto como inicial
+	 * @param mensagemAjuda Mensagem que auxilia no entendimento da
+	 * semântica do componente
+	 * @return			Botao já criado
+	 */
+	public JButton criarBotao (String descricao, String texto, String mensagemAjuda){
+		JButton novo = criarBotao(descricao, texto);
+		
+		novo.setToolTipText(mensagemAjuda);
+		
+		return novo;
+	}
+	
+	/**
+	 * Criação de um botão padrão
+	 * @param descricao Identificação do botao no tratamento de ações
+	 * @param texto		Texto a ser posto como inicial
+	 * @param habilitar Controle da utilização do botão, permitindo o click do
+	 * mouse ou não
+	 * @return			Botao já criado
+	 */
+	public JButton criarBotao (String descricao, String texto, boolean habilitar){
+		JButton novo = criarBotao(descricao, texto);
+		
+		novo.setEnabled(habilitar);
+		
+		return novo;
+	}
+	
+	/**
+	 * Criação de um botão padrão
+	 * @param descricao Identificação do botão no tratamento de ações
+	 * @param texto		Texto a ser posto como inicial
+	 * @param mensagemAjuda Mensagem que auxilia no entendimento da
+	 * semântica do componente
+	 *  @param habilitar Controle da utilização do botão, permitindo o click do
+	 * mouse ou não
+	 * @return			Botao já criado
+	 */
+	public JButton criarBotao (String descricao, String texto, String mensagemAjuda, boolean habilitar){
+		JButton novo = criarBotao(descricao, texto, mensagemAjuda);
+		
+		novo.setEnabled(habilitar);
+		
+		return novo;
+	}
+	
+	/**
+	 * Criação de um espaço vazio nas dimensões desejadas
+	 * @param largura Largura do espaço
+	 * @param altura Altura do espaço
+	 * @return Espaço vazio construído
+	 */
+	private Component criarEspacoVazio (int largura, int altura) {
+		Component caixa = Box.createRigidArea(new Dimension(largura, altura));
+		
+		return caixa;
+	}
+	
+	/**
+	 * Criação de um modelo de tabela, configurando os dois primeiros
+	 * campos como checkBox
+	 * @param dados Dados a serem inicializados
+	 * @param cabecalho Cabeçalho dos dados 
+	 * @return Modelo de tabela criado
+	 */
+	private DefaultTableModel criarModeloTabela (String[][] dados, String []cabecalho){
+		DefaultTableModel modelo = new DefaultTableModel (dados, cabecalho){
 			private static final long serialVersionUID = 1L;
 
 			@Override
@@ -541,127 +915,44 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 			}
 		};
 		
-		tabelaDados = new JTable(modeloTabelaDados);
-		JScrollPane planoRolante = new JScrollPane(tabelaDados);
-		
-		confTamColTabela(tabelaDados, tamanho);
-		
-		tabelaDados.getTableHeader().setReorderingAllowed(false);
-		
-		tabelaDados.addPropertyChangeListener(this);
-		
-		for (int i = 0; i < 30; i++)
-			modeloTabelaDados.insertRow (i, new Object[]{false, false, 0, 0, 0});
-		
-		painelAvulso.add(planoRolante);
-		
-		painelItensEstoque.add(painelAvulso);
+		return modelo;
 	}
-
+		
 	/**
-	 * Construção do painel Manipulação, com a inserção dos componentes
-	 * necessários
+	 * Criação de um campo para texto padrão 
+	 * @return Campo de texto criado
 	 */
-	private void construirPainelManipulacao (){
-		construirBotaoPaineis ("salvarListagem", "Salvar",
-								"Salvar alteração do estoque",
-								false, salvarListagem, painelManipulacao);
+	private JTextField criarTextField (){
+		JTextField novo = new JTextField();
 		
-		construirBotaoPaineis ("exibirHistórico", "Histórico",
-								"Exibir histórico completo dos itens",
-								true, exibirHistorico, painelManipulacao);
-		
-		construirBotaoPaineis ("gerarRelatorio", "Gerar Relatorio",
-								"Gerar relatório com os itens marcados",
-								true, gerarRelatorio, painelManipulacao);
-		
-		painelManipulacao.add(getEspacoVazio(250, 20));
-		
-		construirManiEstoque ("Estoque Min:", "Operações básicas sobre o estoque mínimo",
-								markTodosMin, "markTodosMin", desmarkTodosMin, "desmarkTodosMin",
-								calcMin, "calcMin");
-		
-		painelManipulacao.add(getEspacoVazio(250, 20));
-		
-		construirManiEstoque ("Estoque Max:", "Operações básicas sobre o estoque máximo",
-								markTodosMax, "markTodosMax", desmarkTodosMax, "desmarkTodosMax",
-								calcMax, "calcMax");
-		
-		painelManipulacao.add(getEspacoVazio(250, 130));
+		return novo;
 	}
 	
 	/**
-	 * Construção dos ambientes controladores das operações sobre o estoque
-	 * @param descricaoID Descrição do ambiente
-	 * @param mensagemID Mensagem auxiliar do ambiente
-	 * @param marcar Ação de marcar
-	 * @param markID Identificação da ação de marcar
-	 * @param desmarcar Ação de desmarcar
-	 * @param desmarkID Identificação da ação de desmarcar
-	 * @param calcular Ação de calcular
-	 * @param calcID Identificação da ação de calcular
+	 * Criação de um campo para texto padrão
+	 * @param nome Nome a ser atribuído ao campo
+	 * @return Campo de texto criado
 	 */
-	private void construirManiEstoque (String descricaoID, String mensagemID,
-										JButton marcar, String markID, 
-										JButton desmarcar, String desmarkID,
-										JButton calcular, String calcID){
-		painelAvulso = new JPanel ();
-		painelAvulso.setLayout(new GridLayout(4, 1));
+	private JTextField criarTextField (String nome){
+		JTextField novo = criarTextField();
 		
-		dimensaoAvulsa = new Dimension (250, 100);
+		novo.setName(nome);
 		
-		painelAvulso.setMaximumSize (dimensaoAvulsa);
-		painelAvulso.setMinimumSize (dimensaoAvulsa);
-		painelAvulso.setPreferredSize(dimensaoAvulsa);
-					
-		botaoAvulso = criarIdentificacao (descricaoID, false);
-		botaoAvulso.setToolTipText(mensagemID);
-		painelAvulso.add(botaoAvulso);
-		
-		construirBotaoPaineis (markID, "Marcar todos",
-								"Seleciona todos os itens para o cálculo",
-								true, marcar, painelAvulso);
-		
-		construirBotaoPaineis (desmarkID, "Desmarcar todos",
-								"Libera todos os itens do cálculo",
-								true, desmarcar, painelAvulso);
-		
-		construirBotaoPaineis (calcID, "Calcular",
-								"Cálculo com todos os itens selecionados",
-								true, calcular, painelAvulso);
-		
-		painelManipulacao.add(painelAvulso);
+		return novo;
 	}
 	
-	
-	
-
 	/**
-	 * Criação de identificação, textos, a serem inseridas na área
-	 * gráfica
-	 * @param descricao	Texto a ser posto como inicial 
-	 * @param checkBox	Sinaliza se é um texto de identificação de checkBox
-	 * @return 			O texto criado
+	 * Criação de um campo para texto padrão
+	 * @param nome Nome a ser atribuído ao campo
+	 * @param textoInicial Texto inicial a ser inserido no campo
+	 * @return Campo de texto criado
 	 */
-	private JButton criarIdentificacao (String descricao, boolean checkBox){
-		botaoAvulso = new JButton();
+	private JTextField criarTextField (String nome, String textoInicial){
+		JTextField novo = criarTextField(nome);
 		
-		if (!checkBox)
-			dimensaoAvulsa = new Dimension(120, 50);
-		else
-			dimensaoAvulsa = new Dimension(120, 50);
+		novo.setText(textoInicial);
 		
-		botaoAvulso.setText(descricao);
-		botaoAvulso.setHorizontalAlignment(JButton.CENTER);
-				
-		botaoAvulso.setBorderPainted(false);
-		botaoAvulso.setContentAreaFilled(false);
-		
-		botaoAvulso.setMaximumSize (dimensaoAvulsa);
-		botaoAvulso.setMinimumSize (dimensaoAvulsa);
-		botaoAvulso.setPreferredSize (dimensaoAvulsa);
-		
-		return botaoAvulso;
+		return novo;
 	}
 	
 	/**
@@ -673,90 +964,22 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 	 * @return				Área de texto construída
 	 */
 	private JTextField criarTextField (String nome, String textoInicial, boolean executavel){
-		JTextField novo = new JTextField();
+		JTextField novo = criarTextField(nome, textoInicial);
+		int larg, alt;
 		
-		novo.setText (textoInicial);
-		novo.setName (nome);
-
 		if (executavel){
 			novo.getDocument().addDocumentListener(this);
-			dimensaoAvulsa = new Dimension (60, 20);
+			larg = 60;
+			alt = 20;
 		}else{
 			novo.addMouseListener(this);
-			dimensaoAvulsa = new Dimension (179, 20);
+			larg = 179;
+			alt = 20;
 		}
 		
-		novo.setMinimumSize (dimensaoAvulsa);
-		novo.setMaximumSize (dimensaoAvulsa);
-		novo.setPreferredSize (dimensaoAvulsa);
+		novo = (JTextField) setDimensao(novo, larg, alt);
 				
 		return novo;
-	}
-		
-	/**
-	 * Criação de um botão padrão
-	 * @param descricao Identificação do botao no tratamento de ações
-	 * @param texto		Texto a ser posto como inicial
-	 * @param habilitar Controle da utilização do botão, permitindo o click do
-	 * mouse ou não
-	 * @return			Botao já criado
-	 */
-	private JButton criarBotao (String descricao, String texto, boolean habilitar){
-		botaoAvulso = new JButton();
-		dimensaoAvulsa = new Dimension (60, 20);
-		
-		botaoAvulso.setText(texto);
-		
-		botaoAvulso.setEnabled(habilitar);
-		
-		botaoAvulso.setMinimumSize(dimensaoAvulsa);
-		botaoAvulso.setMaximumSize(dimensaoAvulsa);
-		botaoAvulso.setPreferredSize(dimensaoAvulsa);
-		
-		botaoAvulso.setActionCommand(descricao);
-		botaoAvulso.addActionListener(this);
-		
-		return botaoAvulso;
-	}	
-	
-	/**
-	 * Criação de um botão padrão, controlando a dimensão
-	 * @param descricao Identificação do botao no tratamento de ações
-	 * @param texto		Texto a ser posto como inicial
-	 * @param habilitar Controle da utilização do botão, permitindo o click do
-	 * mouse ou não
-	 * @param larg	Largura do botão a ser criado
-	 * @param alt Altura do botão a ser criado
-	 * @return			Botao já criado
-	 */
-	private JButton criarBotao (String descricao, String texto, boolean habilitar, int larg, int alt){
-		botaoAvulso = new JButton();
-		dimensaoAvulsa = new Dimension (larg, alt);
-		
-		botaoAvulso.setText(texto);
-		
-		botaoAvulso.setEnabled(habilitar);
-		
-		botaoAvulso.setMinimumSize(dimensaoAvulsa);
-		botaoAvulso.setMaximumSize(dimensaoAvulsa);
-		botaoAvulso.setPreferredSize(dimensaoAvulsa);
-		
-		botaoAvulso.setActionCommand(descricao);
-		botaoAvulso.addActionListener(this);
-		
-		return botaoAvulso;
-	}
-	
-	/**
-	 * Criando um espaço vazio nas dimensões desejadas
-	 * @param largura Largura do espaço
-	 * @param altura Altura do espaço
-	 * @return Espaço vazio construído
-	 */
-	private Component getEspacoVazio (int largura, int altura) {
-		Component caixa = Box.createRigidArea(new Dimension(largura, altura));
-		
-		return caixa;
 	}
 	
 	/**
@@ -775,35 +998,60 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 		return novo;
 	}
 	
-
 	/**
 	 * Criação da identificação do "Aplicar a todos" de maneira padrão
 	 * @return Identificação padrão
 	 */
-	private JButton getAplicarTodos (){
-		botaoAvulso = criarIdentificacao ("Aplicar a todos", true);
+	private JButton criarAplicarTodos (){
+		botaoAvulso = criarIdentificacao ("Aplicar a todos");
 		botaoAvulso.setHorizontalAlignment(JButton.LEFT);
 		botaoAvulso.setToolTipText("Aplicar o padrão a todos os itens de estoque");
 		
 		return botaoAvulso;
 	}
 	
+	
+	/**********************************************************
+	 * Configuração Geral
+	 **********************************************************/
+	/**
+	 * Configuração da dimensão de um painel
+	 * @param painel Painel a ser dimensionado
+	 * @param larg Largura do painel
+	 * @param alt Altura do painel
+	 * @return Painel dimensionado
+	 */
+	private Component setDimensao (Component alvo, int larg, int alt){
+		dimensaoAvulsa = new Dimension(larg, alt);
+		
+		alvo.setMaximumSize(dimensaoAvulsa);
+		alvo.setMinimumSize(dimensaoAvulsa);
+		alvo.setPreferredSize(dimensaoAvulsa);
+		
+		return alvo;
+	}
+	
 	/**
 	 * Configuração do largura das colunas da tabela
 	 * @param tabela Tabela a ser configurada
 	 * @param tamanho Larguras a serem atribuídas
+	 * @return Tabela configurada
 	 */
-	private void confTamColTabela (JTable tabela, int[] tamanho){
+	private JTable setLargTabela (JTable tabela, int[] tamanho){
 		for (int col = 0; col < tamanho.length; col++){
 			tabela.getColumnModel().getColumn(col).setMaxWidth(tamanho[col]);
 			tabela.getColumnModel().getColumn(col).setMinWidth(tamanho[col]);
 			tabela.getColumnModel().getColumn(col).setPreferredWidth(tamanho[col]);
 			tabela.getColumnModel().getColumn(col).setResizable(false);
 		}
+		
+		return tabela;
 	}
 	
-	
-	
+
+	/**********************************************************
+	 * Controle de Ações na GUI
+	 **********************************************************/
 	/**
 	 * Controle das ações dos ambientes gráficos, para
 	 * a inserção de caracteres nos campos de texto
@@ -882,7 +1130,6 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 	public void mouseExited(MouseEvent evento) {
 	}
 
-
 	/**
 	 * Dispensável para este trabalho, mas obrigatório
 	 * de declarar
@@ -898,7 +1145,6 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 	public void focusLost(FocusEvent evento) {
 	}
 
-	
 	@Override
 	public void actionPerformed(ActionEvent evento) {
 		if ("abrirListagem".equals(evento.getActionCommand())){
@@ -906,7 +1152,6 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 		}
 		
 	}
-
 
 	@Override
 	public void itemStateChanged(ItemEvent evento) {
