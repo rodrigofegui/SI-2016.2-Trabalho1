@@ -5,19 +5,27 @@ package gui;
 import java.io.File;
 import javax.swing.filechooser.FileFilter;
 
-/*	Definição da Classe em si */
+/**
+ * Aplicação responsável pela construção dos arquivos válidos a serem
+ * considerados no seletor de arquivos
+ * @author	Rodrigo Guimarães
+ * @version	1.0
+ * @since	13/09/2016
+ */
 public class FiltroTxt extends FileFilter{
-	/*	Criação do filtro de arquivos */
-	public boolean accept(File f) {
-		/*	Sendo um diretório, é aceito */
-        if (f.isDirectory()) {
+
+	/**
+	 * Verificação se é um arquivo no formato aceitável
+	 * @param arq Arquivo a ser analisado
+	 * @return true, se for um arquivo aceitável;
+	 * false, caso contrário
+	 */
+	public boolean accept(File arq) {
+        if (arq.isDirectory()) {
             return true;
         }
         
-        /*	Verificação da extensão do arquivo */
-        /*	Conseguindo a extensão do arquivo */
-        String extensao = getExtensao(f);
-        /*	Existindo 'extensao' e sendo válida, é aceita, caso contrário é rejeitada */
+        String extensao = getExtensao(arq);
         if (extensao != null) {
             if (extensao.equals("txt")){
                     return true;
@@ -29,21 +37,25 @@ public class FiltroTxt extends FileFilter{
         return false;
     }
 
-    /*	Como será visto no Selecionador de Arquivos */
+    /**
+     * Descrição dos formatos aceitos
+     * @return Descrição construída
+     */
     public String getDescription() {
         return "Arquivos de texto (*.txt)";
     }
     
-    /*	Extraindo a extensão do arquivo */
+    /**
+     * Valor atribuído à extensão do arquivo
+     * @param arq Arquivo a ser extraido a extensão
+     * @return Extensão detectada, ou "" caso contrário
+     */
     public String getExtensao (File arq){
-    	String ext = null;
+    	String ext = "";
         String nomearq = arq.getName();
         
-        /*	Encontra o último '.' */
         int pos = nomearq.lastIndexOf('.');
 
-        /*	Sendo uma posição válida, extrai-se o resto do nome do arquivo,
-         *	ou seja a extensão */
         if ((pos > 0) &&  (pos < nomearq.length() - 1)) {
             ext = nomearq.substring(pos + 1).toLowerCase();
         }

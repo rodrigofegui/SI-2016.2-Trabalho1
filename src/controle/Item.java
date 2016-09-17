@@ -7,7 +7,7 @@ package controle;
 import java.util.LinkedList;
 
 /**
- * Classe responsável pela implementação física de um item
+ * Classe responsável pela implementação lógica de um item
  * @author	Rodrigo Guimarães
  * @version	1.0
  * @since	07/09/2016
@@ -30,7 +30,6 @@ public class Item {
 	private String descricao;
 	private LinkedList<Integer> historico;
 	
-	private boolean demandaNova;
 	private int demandaMedia;
 	private int demandaDesvPad;
 	
@@ -53,7 +52,6 @@ public class Item {
 		
 		this.historico = new LinkedList<Integer>();
 		
-		this.demandaNova = true;
 		this.demandaMedia = 0;
 		this.demandaDesvPad = 0;
 		
@@ -97,7 +95,6 @@ public class Item {
 	 */
 	public void addHistorico (Integer demanda){
 		this.historico.add(demanda);
-		this.demandaNova = true;
 	}
 	
 	/**
@@ -106,9 +103,27 @@ public class Item {
 	 */
 	public void addQntAtual (Integer atual){
 		this.historico.addFirst(atual);
-		this.demandaNova = true;
 	}
 	
+	/**
+	 * Atribui valor a qualquer período do histórico
+	 * @param indice Posição a ser alterada
+	 * @param demanda Quantidade a ser adicionada ao histórico
+	 */
+	public void setHistorico (int indice, Integer demanda){
+		this.historico.set(indice, demanda);
+	}
+	
+	/**
+	 * Atruibui valor à quantidade atual em estoque
+	 * do Item
+	 * @param atual Quantidade Atual
+	 */
+	public void setQntAtual (Integer atual){
+		this.historico.removeFirst();
+		
+		addQntAtual (atual);
+	}
 	
 	
 	/**
@@ -173,8 +188,7 @@ public class Item {
 	 * @return Média da Demanda
 	 */
 	public int getDemandaMedia() {
-		if (demandaNova)
-			demandaMedia = calculaDemandaMedia();
+		demandaMedia = calculaDemandaMedia();
 		
 		return demandaMedia;
 	}
@@ -184,8 +198,7 @@ public class Item {
 	 * @return Desvio padrão da demanda
 	 */
 	public int getDemandaDesvPad() {
-		if (demandaNova)
-			demandaDesvPad = calculaDemandaDesvPad();
+		demandaDesvPad = calculaDemandaDesvPad();
 		
 		return demandaDesvPad;
 	}
@@ -195,8 +208,10 @@ public class Item {
 	 * @return Nível de estoque mínimo
 	 */
 	public int getEstoqueMin (){
-		if (demandaNova || habilitadoEstoqueMin)
+		if (habilitadoEstoqueMin)
 			estoqueMin = calculaEstoqueMin ();
+		else
+			estoqueMin = 0;
 		
 		return estoqueMin;
 	}
@@ -206,8 +221,10 @@ public class Item {
 	 * @return Nível de estoque máximo
 	 */
 	public int getEstoqueMax (){
-		if (demandaNova || habilitadoEstoqueMax)
+		if (habilitadoEstoqueMax)
 			estoqueMax = calculaEstoqueMax ();
+		else
+			estoqueMax = 0;
 		
 		return estoqueMax;
 	}
@@ -374,8 +391,6 @@ public class Item {
 			
 			desvPad = (float) Math.sqrt(desvPad / (historico.size() - 1));
 			
-			//demandaNova = false;
-			
 			return Math.round(desvPad);
 		}
 		return 0;
@@ -388,8 +403,6 @@ public class Item {
 	private int calculaEstoqueMin() {
 		float termo1 = getFatorSeguranca() * getDemandaDesvPad();
 		double termo2 = Math.sqrt(getLeadTime() / getPeriodo());
-		
-		demandaNova = false;
 		
 		return Math.round(termo1 * (float) termo2);
 	}

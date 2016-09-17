@@ -9,13 +9,17 @@ import gui.InterfaceGrafica;
  * @since	07/09/2016
  */
 public class ControladorEstoque {
+	/**
+	 * Estoque a ser considerado na aplicação
+	 */
 	public static Estoque estoque;
 	
+	/**
+	 * Método principal a ser executado pela aplicação 
+	 */
 	public static void main(String[] args) {
 		estoque = new Estoque();
-		//Estoque estoque = new Estoque("Referências/ListaItensBase.txt", "Referências/HistóricoBase.txt");
 		
-		//estoque.escreverRelatorio();
 		new InterfaceGrafica ();
 	}
 }

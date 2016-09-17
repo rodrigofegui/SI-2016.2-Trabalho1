@@ -17,7 +17,7 @@ import java.util.Date;
 import java.util.LinkedList;
 
 /**
- * Classe responsável pela implementação física de um estoque
+ * Classe responsável pela implementação lógica de um estoque
  * @author	Rodrigo Guimarães
  * @version	1.0
  * @since	07/09/2016
@@ -25,12 +25,16 @@ import java.util.LinkedList;
 public class Estoque {
 	/**
 	 * Itens registrados
-	 * Itens que deverão ter o estoque mínimo calculado
-	 * Itens que deverão ter o estoque máximo calculado
 	 */
-	private LinkedList<Item> itens;
-	String nomeArqListagem;
-	String nomeArqHistorico;
+	public LinkedList<Item> itens;
+	/**
+	 * nomeAbsArqListagem Diretório completo do arquivo base para a catalogação
+	 * do estoque
+	 * nomeAbsArqHistorico Diretório completo do arquivo base para o levantamento
+	 * dos históricos dos itens em estoque 
+	 */
+	String nomeAbsArqListagem = "";
+	String nomeAbsArqHistorico = "";
 	
 	
 	
@@ -49,11 +53,9 @@ public class Estoque {
 	public Estoque (String nomeArq){
 		this();
 		
-		this.nomeArqListagem = nomeArq;
+		this.nomeAbsArqListagem = nomeArq;
 		
 		catalogar(nomeArq);
-		
-		ordena();
 	}
 	
 	/**
@@ -65,15 +67,54 @@ public class Estoque {
 	public Estoque (String nomeArqCat, String nomeArqHist){
 		this(nomeArqCat);
 		
-		this.nomeArqHistorico = nomeArqHist;
+		this.nomeAbsArqHistorico = nomeArqHist;
 		
 		constroiHistorico (nomeArqHist);
 	}
 
+	/**
+	 * Valor atribuído ao diretório do arquivo base para a catalogação
+	 * @return Diretório completo do arquivo
+	 */
+	public String getNomeAbsArqListagem (){
+		return this.nomeAbsArqListagem;
+	}
 	
+	/**
+	 * Atribuição do diretório completo do arquivo de catalogação
+	 * @param nome Diretório completo do arquivo
+	 */
+	public void setNomeAbsArqListagem (String nome){
+		this.nomeAbsArqListagem = nome;
+	}
 	
+	/**
+	 * Valor atribuído ao diretório do arquivo base para a construção
+	 * dos históricos
+	 * @return Diretório completo do arquivo
+	 */
+	public String getNomeAbsArqHistorico (){
+		return this.nomeAbsArqHistorico;
+	}
+	
+	/**
+	 * Atribuição do diretório completo do arquivo de construção dos
+	 * históricos
+	 * @param nome Diretório completo do arquivo
+	 */
+	public void setNomeAbsArqHistorico (String nome){
+		this.nomeAbsArqHistorico = nome;
+	}
+	
+	/**
+	 * Itens registrados em estoque
+	 * @return Itens registrados, caso exista; ou "null" caso contrário
+	 */
 	public LinkedList<Item> getItens (){
-		return this.itens;
+		if (!itens.equals(null))
+			return this.itens;
+		
+		return null;			
 	}
 	
 	
@@ -101,6 +142,10 @@ public class Estoque {
 			}
 		     
 			leitura.close();
+			
+			ordena();
+			
+			System.out.println("Catalogou e ordenou");
 		}catch(IOException excessao){
 			excessao.printStackTrace();
 		}
@@ -272,14 +317,24 @@ public class Estoque {
 	}
 	
 	/**
+	 * Cálculo do estoque mínimo e máximo para todos os itens
+	 */
+	public void calcularEstoque (){
+		for (Item item : itens){
+			item.getEstoqueMin();
+			item.getEstoqueMax();
+		}
+	}
+	
+	/**
 	 * Restauração dos itens do Estoque às configurações iniciais
 	 */
 	public void restaurarTodos (){
 		for (int ind = 0; ind < itens.size(); ind++){
-			Item itemAvulso = itens.get(ind);
-			
-			itemAvulso.restaurar();
+			itens.get(ind).restaurar();
 		}
+		
+		System.out.println("Restaurou todos\n");
 	}
 	
 	/**
@@ -349,7 +404,7 @@ public class Estoque {
 			String data = dateFormat.format(date);
 			
 			String relatorio = gerarRelatorio (data);
-			String caminho = "Relatórios/" + data + ".txt";
+			String caminho = "Relatórios/relatorio_" + data + ".txt";
 
 			BufferedWriter gravarArq = new BufferedWriter(new FileWriter (caminho));
 			
