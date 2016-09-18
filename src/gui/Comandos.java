@@ -115,8 +115,11 @@ public class Comandos {
 	 * @param PP Tempo de uso do estoque
 	 */
 	public static void controleMarcarTodosPP (int acao, int PP){
-		if (acao == 0)
+		if (acao == 0){
 			controle.ControladorEstoque.estoque.aplicarTodosPeriodo(PP);
+			
+			System.out.println("Aplicou a todos os mesmo período");
+		}
 	}
 	
 	/**
@@ -345,7 +348,7 @@ public class Comandos {
 	 * @param original Nome do arquivo original
 	 * @return Nome do arquivo tratado
 	 */
-	private static String tratarCaminho (String original){
+	public static String tratarCaminho (String original){
 		String tratada = "";
 		
 		if(original.contains("_mod.txt")){

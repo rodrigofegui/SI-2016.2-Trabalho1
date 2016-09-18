@@ -16,6 +16,7 @@ public class ControladorEstoque {
 	
 	/**
 	 * Método principal a ser executado pela aplicação 
+	 * @param args Argumentos via linha de comando
 	 */
 	public static void main(String[] args) {
 		estoque = new Estoque();

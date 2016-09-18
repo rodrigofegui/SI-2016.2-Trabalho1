@@ -18,6 +18,7 @@ public class Item {
 	 * Identificador inteligível
 	 * Historico das quantidade em estoque, incluindo a atual
 	 * Controle da inserção de novas demandas ao histórico
+	 * Demanda total no período
 	 * Média da demanda
 	 * Desvio padrão da demanda
 	 * Estoque mínimo
@@ -30,6 +31,7 @@ public class Item {
 	private String descricao;
 	private LinkedList<Integer> historico;
 	
+	private int demanda;
 	private int demandaMedia;
 	private int demandaDesvPad;
 	
@@ -52,6 +54,7 @@ public class Item {
 		
 		this.historico = new LinkedList<Integer>();
 		
+		this.demanda = 0;
 		this.demandaMedia = 0;
 		this.demandaDesvPad = 0;
 		
@@ -182,6 +185,31 @@ public class Item {
 	public void setHistorico (LinkedList<Integer> historico){
 		this.historico = historico;
 	}
+	
+	/**
+	 * Valor atribuído à demanda num dado período específico
+	 * @param periodo Quantidade de períodos a serem considerados
+	 * @return Demanda para aquele período ou até o máximo permitido
+	 */
+	public int getDemanda (int periodo){
+		this.demanda = 0;
+		int lim = configurarLimiteSuperior (periodo, getHistorico().size());
+		
+		for (int ind = 0; ind < lim; ind++)
+			this.demanda += historico.get(ind);
+		
+		return this.demanda;
+	}
+	
+	/**
+	 * Valor atribuído à demanda num dado período específico
+	 * @return Demanda para o máximo de períodos permitidos
+	 */
+	public int getDemanda (){
+		this.demanda = getDemanda(getHistorico().size());
+		
+		return this.demanda;
+	}
 
 	/**
 	 * Valor atribuído à média da demanda
@@ -208,6 +236,8 @@ public class Item {
 	 * @return Nível de estoque mínimo
 	 */
 	public int getEstoqueMin (){
+		System.out.println("Aptidão Estoque min -> " + habilitadoEstoqueMin);
+		
 		if (habilitadoEstoqueMin)
 			estoqueMin = calculaEstoqueMin ();
 		else
@@ -355,23 +385,13 @@ public class Item {
 		this.habilitadoEstoqueMax = habilitadoEstoqueMax;
 	}
 
-
-
-
 	/**
 	 * Cálculo da médida da demanda para o histórico do Item
 	 * @return Demanda média recém calculada
 	 */
 	private int calculaDemandaMedia (){
 		if (!historico.isEmpty()){
-			float soma = 0.0f;
-				
-			for (int ind = 0; ind < historico.size(); ind++)
-				soma += (float) historico.get(ind);
-				
-			//demandaNova = false;
-			
-			return Math.round(soma / historico.size());
+			return Math.round(getDemanda() / historico.size());
 		}
 		
 		return 0;
@@ -402,9 +422,12 @@ public class Item {
 	 */
 	private int calculaEstoqueMin() {
 		float termo1 = getFatorSeguranca() * getDemandaDesvPad();
-		double termo2 = Math.sqrt(getLeadTime() / getPeriodo());
+		float termo2 = (float) Math.sqrt((double)getLeadTime() / getPeriodo());
+
+		System.out.println(toString());
+		System.out.println("\nTermo 2 -> " + termo2);
 		
-		return Math.round(termo1 * (float) termo2);
+		return Math.round(termo1 * termo2);
 	}
 	
 	/**
@@ -415,6 +438,22 @@ public class Item {
 		return ((getEstoqueMin() + getDemandaMedia()) * getLeadTime());
 	}
 	
+	/**
+	 * Configuração do limite superior de um intervalo 
+	 * @param aAnalisar Limite superior pretendido
+	 * @param maximo Limite superior máximo
+	 * @return Valor do limite máximo
+	 */
+	private int configurarLimiteSuperior (int aAnalisar, int maximo){
+		int lim;
+		
+		if (aAnalisar > maximo)
+			lim = maximo;
+		else
+			lim = aAnalisar;
+		
+		return lim;
+	}
 	
 	
 	/**
@@ -434,9 +473,17 @@ public class Item {
 	 * @return Interpretação
 	 */
 	public String toString (){
-		return "O código '" + getCodigo() +
-				"' está atribuído ao produto: " + getDescricao() + ";"
-				+ " tendo como histórico: \n" + getHistorico().toString() + "\n";
+		String item = "O código '" + getCodigo() +
+					"' está atribuído ao produto: " + getDescricao() + ";\n";
+		
+		if (!getHistorico().isEmpty())
+			item += "Tendo como histórico: \n" + getHistorico().toString() + "\n";
+		
+		item += "Lead Time = " + getLeadTime() + "\n";
+		item += "Período = " + getPeriodo() + "\n";
+		item += "FS = " + getFatorSeguranca() + "\n";
+				
+		return item;
 	}
 	
 	/**

@@ -293,7 +293,7 @@ public class Estoque {
 	/**
 	 * Atribuição a todos os itens do estoque o mesmo período
 	 * de consideração para o estoque
-	 * @param periodo Tempo para consideração0 a ser aplicado
+	 * @param periodo Tempo para consideração a ser aplicado
 	 */
 	public void aplicarTodosPeriodo (int periodo){
 		for (int ind = 0; ind < itens.size(); ind++){
@@ -375,21 +375,23 @@ public class Estoque {
 		String relatorio = "";
 		
 		relatorio += "Relatório de situação do estoque\n\n";
-		relatorio += "Data de expedição: " + data + "\n\n";
-		relatorio += "--------------------------------------------------------------------\n";
-		relatorio += "Código\tDescrição\tQnt Existente\tEstoque Min\t\tEstoque Max\n";
-		relatorio += "--------------------------------------------------------------------\n";
+		relatorio += "Data de expedição: " + data + "\n";
+		relatorio += "Período de referência: " + itens.getFirst().getPeriodo() + "\n\n";
+		relatorio += "--------------------------------------------------------------------------------\n";
+		relatorio += "Código\tDescrição\tQnt Existente\tDemanda Tot.\tEstoque Min\t\tEstoque Max\n";
+		relatorio += "--------------------------------------------------------------------------------\n";
 		
 		for (int ind = 0; ind < itens.size(); ind++){
 			Item item = itens.get(ind);
 			relatorio +=   item.getCodigo() + "\t\t"
 						 + item.getDescricao() + "\t\t"
 						 + item.getQntExistente() + "\t\t\t\t"
+						 + item.getDemanda() + "\t\t\t\t"
 						 + item.getEstoqueMin() + "\t\t\t\t"
 						 + item.getEstoqueMax() + "\n";
 		}
 		
-		relatorio += "--------------------------------------------------------------------\n";
+		relatorio += "--------------------------------------------------------------------------------\n";
 		
 		return relatorio;
 	}

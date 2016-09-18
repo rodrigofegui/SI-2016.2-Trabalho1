@@ -312,7 +312,7 @@ public class InterfaceGrafica implements DocumentListener, MouseListener,
 		painelBase.add((JPanel) lista.getFirst());
 		lista.clear();
 		
-		lista = criarPainelItensConf("Fator Segurança:", "Nível de segurança sobre o suprimento de estoque, em % "+
+		lista = criarPainelItensConf("Nível de Segurança:", "Nível de segurança sobre o suprimento de estoque, em % "+
 									"(deve ser menor que 100)", "nivelS", "95");
 		
 		nivelSeguranca = (JTextField) lista.get(1);
